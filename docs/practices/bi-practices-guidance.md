@@ -297,4 +297,3 @@ Anything that fails this checklist may still be published, labeled informational
 
 - Kimball Group: [Dimensional modeling techniques](https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/) (conformed dimensions, slowly changing dimensions)
 - Internal: [Analytical dataset language](analytical-dataset-language.md), [Medallion data practices](medallion-data-practices.md), [Access model](../governance/access-model.md), [Spec-driven development](spec-driven-development.md)
-

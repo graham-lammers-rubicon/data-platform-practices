@@ -20,7 +20,7 @@ docs/
   platform/                      Infrastructure reference: Azure + Databricks
     azure-infrastructure.md      (stub)
     environments.md              Two tiers (prod/np), env-per-catalog, DAB-only promotion
-    cicd-and-deployment.md       (stub)
+    cicd-and-deployment.md       GitHub Actions, promotion gates, OIDC identity
     compute-policies.md          (stub)
     naming-conventions.md        Case styles, name patterns, standard tokens
     secrets-and-credentials.md   (stub)

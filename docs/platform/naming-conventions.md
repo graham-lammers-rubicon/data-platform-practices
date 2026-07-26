@@ -4,7 +4,7 @@ Defines naming standards for every named resource on the platform. Nothing is na
 
 ## What this covers
 
-- Semantic naming: names and comments as the machine-readable map of the platform
+- Semantic naming: names as the machine-readable map of the platform
 - Which case style applies in which context
 - Name patterns for Unity Catalog objects, Databricks workspace objects, Azure resources, identities, secrets, tags, and repos
 - The platform constraints that force these choices
@@ -16,7 +16,7 @@ Names are read far more often than written, by humans and by agents. Unity Catal
 - Full words: `customer_acquisition_cost`, not `cust_acq_cst`. Brief and semantic, never cryptic. Casual abbreviations do not inform.
 - Compressed tokens exist only where a platform limit forces them (the Azure 24-character types: `dplat`, `np`, `wus`). UC names have a 255-character limit and no budget pressure; never compress them.
 - Industry-standard abbreviations only: `id`, `qty`, `pct`.
-- A name states what a thing is; the COMMENT states what it means (grain, unit, scope). Both are required; neither substitutes for the other.
+- A name states what a thing is; the COMMENT states what it means. See [Metadata and comments](metadata-and-comments.md).
 
 ## Case styles and where they apply
 
@@ -56,8 +56,7 @@ Rules:
 - Bronze system columns keep their leading underscore: `_ingest_timestamp`, `_source_file`, `_pipeline_id`, `_is_quarantined`, `_raw_payload`.
 - No abbreviations in column names except industry-standard (`id`, `qty`, `pct`).
 - Singular entity names (`customer`, not `customers`); the grain statement says what a row is.
-- Every UC object carries a COMMENT: catalogs and schemas state scope and owner; tables state grain and content (see [Medallion data practices](../practices/medallion-data-practices.md)); columns state meaning, unit, and semi-additive labeling where it applies. An object without a COMMENT is incomplete.
-- COMMENTs are queryable metadata (`INFORMATION_SCHEMA`, system tables). Humans and agents discover the landscape through them, not tribal knowledge; an uncommented object is invisible to both.
+- Every UC object also requires a COMMENT: [Metadata and comments](metadata-and-comments.md).
 
 ## Databricks workspace objects
 
@@ -143,12 +142,12 @@ Baseline keys on every Azure and Databricks compute resource: `env`, `domain`, `
 
 Azure stores tag keys as first written; two spellings of one key (`CostCenter`, `costcenter`) fragment cost reports.
 
-## Repos, files, and commits
+## Repos and files
 
 - Repos and bundles: `kebab-case` (`sales-pipelines`, `data-platform-practices`).
 - Python modules and files: `snake_case`.
 - A file defining one table is named after the table: `sales_daily.sql` defines `gold.sales_daily`.
-- Commit messages are part of the semantic record: imperative subject stating what changed, body stating why. History is how humans and agents reconstruct intent; `fix`, `wip`, and `updates` destroy it.
+- Commit messages, code comments, docstrings: [Metadata and comments](metadata-and-comments.md).
 
 ## Sharp edges
 
@@ -164,7 +163,6 @@ Azure stores tag keys as first written; two spellings of one key (`CostCenter`, 
 ## Checklist
 
 - [ ] Every UC object name matches `[a-z][a-z0-9_]*` and its pattern above
-- [ ] Every UC object has a COMMENT; tables declare grain, columns declare meaning and unit
 - [ ] No compressed names outside the Azure-forced tokens
 - [ ] No layer prefix in any table or column name
 - [ ] No environment token in any job, pipeline, or warehouse name

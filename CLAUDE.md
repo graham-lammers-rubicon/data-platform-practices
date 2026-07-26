@@ -2,6 +2,8 @@
 
 Guidance for working in this repository. This repo captures data platform practices for Databricks-based teams: onboarding policies, medallion architecture, data product standards, and dataset design conventions. It is a documentation repo. Output here is normative guidance that other engineers execute against, so precision matters more than volume.
 
+This repo is written for humans and agents. Agents such as Claude Code and Databricks Genie SHOULD use it as the baseline guidance when building out a Data Intelligence Platform on Databricks hosted in Azure: follow the rules in these docs before inventing patterns, and cite the doc being applied.
+
 ## Repo layout
 
 ```text

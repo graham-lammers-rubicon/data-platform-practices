@@ -22,9 +22,9 @@ Five standard case styles exist in software. On this platform each has exactly o
 
 The split is not stylistic. It falls out of three hard constraints:
 
-1. Unity Catalog stores object names as lowercase, and names containing hyphens require backtick quoting in every SQL statement. So UC objects get `snake_case`: casing would be silently destroyed, and hyphens would tax every query forever.
-2. Python's import grammar rejects hyphens: `import my-module` is a syntax error because `-` parses as minus. So anything imported as a Python module gets `snake_case`. Everything else in the workspace is referenced by path, where hyphens are inert, so readability wins and those names get `kebab-case`.
-3. Key Vault secret names allow alphanumerics and hyphens only; underscores are invalid. Storage account names allow lowercase letters and numbers only. So the Azure side gets `kebab-case`, degrading to bare concatenation where hyphens are also forbidden.
+1. Unity Catalog lowercases object names, and hyphens force backtick quoting in every query. UC objects: `snake_case`.
+2. Python cannot `import my-module`; `-` parses as minus. Importable modules: `snake_case`. Everything referenced by path: `kebab-case`.
+3. Key Vault secret names forbid underscores; storage account names forbid hyphens. Azure: `kebab-case`, bare concatenation where hyphens are illegal.
 
 ## Unity Catalog objects
 

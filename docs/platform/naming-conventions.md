@@ -14,7 +14,7 @@ Defines naming standards for every named resource on the platform. Nothing is na
 Names are read far more often than written, by humans and by agents. Unity Catalog metadata is the primary map an agent has of the data landscape; a name that does not inform misleads both.
 
 - Full words: `customer_acquisition_cost`, not `cust_acq_cst`. Brief and semantic, never cryptic. Casual abbreviations do not inform.
-- Compressed tokens exist only where a platform limit forces them (the Azure 24-character types: `dplat`, `np`, `wus`). UC names have a 255-character limit and no budget pressure; never compress them.
+- Abbreviate only where a platform limit forces it (the Azure 24-character types: `dplat`, `np`, `wus`). UC names have a 255-character limit; spell them out.
 - Industry-standard abbreviations only: `id`, `qty`, `pct`.
 - A name states what a thing is; the COMMENT states what it means. See [Metadata and comments](metadata-and-comments.md).
 
@@ -163,7 +163,7 @@ Azure stores tag keys as first written; two spellings of one key (`CostCenter`, 
 ## Checklist
 
 - [ ] Every UC object name matches `[a-z][a-z0-9_]*` and its pattern above
-- [ ] No compressed names outside the Azure-forced tokens
+- [ ] No abbreviations outside the Azure-forced tokens and the industry-standard set
 - [ ] No layer prefix in any table or column name
 - [ ] No environment token in any job, pipeline, or warehouse name
 - [ ] Importable Python files and notebooks are `snake_case`

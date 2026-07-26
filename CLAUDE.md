@@ -82,7 +82,7 @@ No layer prefixes in table or column names. The schema tells you the layer; the 
 ### Access matrix
 
 | Role | Bronze | Silver | Gold |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | Pipeline service principal | WRITE | WRITE | WRITE |
 | Data engineers | READ | READ/WRITE | READ |
 | Analysts / data scientists | none | READ (approved) | READ |
@@ -125,7 +125,9 @@ This distinction is where semantic layers break down. Do not conflate them.
 
 ### Decision-first design (BI standard)
 
-- The primary measure of the platform is whether it supports better, faster, more accountable decisions. Dashboard counts and refresh speed are operational indicators only.
+- Dashboards are informational by default; the platform exists to drive insight, action, and defensible decisions. Every published output is classified informational or decision-grade. Decision-grade outputs name the decision, decision-maker, and follow-on action; only they may be certified.
+- The primary measure of the platform is whether it supports better, faster, more accountable decisions. Dashboard counts and refresh speed are operational indicators only. The platform team instruments its own decision-support performance: certified-output usage, export events as a defect signal, request-to-certified time.
+- Reuse before build: check the semantic layer for an existing certified definition before authoring a new metric or entity. Extend, don't fork; a new name requires genuinely new meaning.
 - Design backward from the decision: what decision, how often, what information, how current, what accuracy, what action follows.
 - These behaviors are defects, regardless of infrastructure quality: exporting to spreadsheets to get numbers, manual reconciliation before meetings, teams disagreeing on shared KPI definitions.
 - A metric with unresolved definitional questions (entity resolution, disputed records, currency, governing timestamp) must not be certified for decision use.
@@ -152,7 +154,7 @@ Three rules:
 How this maps to the medallion layers:
 
 | Layer | Shape | Rationale |
-|---|---|---|
+| --- | --- | --- |
 | Bronze | Whatever the source sends, including messy and wide | Source fidelity; evidence for reprocessing |
 | Silver | Tidy: long, atomic, one variable per column | Analysis, aggregation in any direction, forecasting-ready |
 | Gold | Intentionally wide at a declared grain | Consumption; the pivot test is the acceptance check |

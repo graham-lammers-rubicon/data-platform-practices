@@ -1,281 +1,290 @@
-# BI Platform Guidance and Standards
+# BI Practices: Decision Systems, Not Reporting
 
-**Scope:** Design, implementation, and operation of enterprise business intelligence and analytics platforms.
-**Normative language:** "Must" indicates a requirement. "Should" indicates a strong recommendation. "May" indicates an option.
+**Scope:** Design, implementation, and operation of business intelligence and analytics platforms.
+
+**What this covers:** The standards that turn a reporting stack into a decision system. Priority order matters here: the semantic meaning of business data comes first, then the decision workflow, then the infrastructure that serves both. Most BI guidance gets this backward and produces well-engineered platforms that inform without ever changing an outcome.
+
+**Normative language:** "Must" is a requirement. "Should" is a strong recommendation. "May" is an option.
 
 ---
 
-## 1. Success Criteria
+## 1. The Standard: Insight, Action, Defense
 
-### 1.1 Primary measure
+Dashboards are informational by default. Informational is the floor, not the goal. A BI platform earns its cost when it does three things reporting alone cannot:
 
-The primary measure of a BI platform is whether it supports better, faster, more accountable decisions. Platform teams must define success criteria in terms of decision outcomes, not delivery volume.
+1. **Drive insight.** Explain why a number changed, not just that it changed.
+2. **Drive action.** Point to the segment, account, or process that needs intervention, and to the owner who intervenes.
+3. **Defend decisions.** Carry the evidence trail: the data, the definition, and the logic behind a call, so the decision holds up when it is questioned later.
 
-### 1.2 Secondary measures
+Reporting that stops at "here is the number" pushes the hard work (interpretation, reconciliation, justification) onto the consumer. That work then happens in spreadsheets, hallways, and meeting prep, outside governance and outside the platform.
 
-The following are operational indicators only and must not be used as the sole measure of platform success:
+### 1.1 Classify every output
+
+Every published output must be classified as **informational** or **decision-grade**:
+
+- **Informational:** context, monitoring, general awareness. Permitted, but must be labeled as such and must not be certified.
+- **Decision-grade:** names the decision it serves, the decision-maker, the action that follows, and the governed metric definitions it depends on. Only decision-grade outputs may be certified.
+
+If no one can state the decision an output serves, it is informational. That is not a failure. Citing an informational output as the basis for a decision is.
+
+### 1.2 Success measures
+
+The primary measure of the platform is whether it supports better, faster, more accountable decisions. The following are operational indicators only and must not be used as the measure of success:
 
 - Number of dashboards created
 - Number of data sources connected
 - Report refresh speed
 - Number of users with self-service access
 
-### 1.3 Indicators of failure
+### 1.3 Failure indicators
 
-The following behaviors indicate the platform is not functioning as a decision system, regardless of infrastructure quality, and must be treated as defects:
+These behaviors mean the platform is informing but not deciding, regardless of infrastructure quality. Treat them as defects:
 
-- Decision-makers export data to spreadsheets rather than using platform outputs
+- Decision-makers export data to spreadsheets rather than acting on platform outputs
 - Teams reconcile conflicting figures manually before meetings
 - Departments disagree on the definition of shared KPIs
 - Business teams depend on analysts to explain routine metric changes
 
----
+### 1.4 Measure the platform itself
 
-## 2. Platform Architecture Requirements
+"Better decisions" is not measurable by assertion. The platform team must instrument and review its own decision-support performance:
 
-A dashboard is the final interface of a larger system and can only be as trusted as the layers beneath it. For every published metric, the platform must have explicit, documented answers for:
+- [ ] Certified vs. informational output usage, per domain
+- [ ] Exports from certified outputs (defect signal, target zero)
+- [ ] Time from metric request to certified definition
+- [ ] Per output: the documented decision is still live; retire it if not
 
-1. How the data is ingested
-2. How records are matched across sources
-3. How business rules are applied
-4. How historical changes are stored
-5. How the metric is calculated
-6. How exceptions are processed
-7. How access is secured
-8. How quickly data becomes available
-
-### 2.1 Metric definition completeness
-
-Every published metric must resolve its underlying definitional questions before release. Example, for "outstanding receivables," the definition must specify:
-
-- Customer record resolution when source systems use different naming conventions
-- Treatment of disputed invoices
-- Treatment of partial payments
-- Handling of customer ownership changes over time
-- Currency conversion method and rate source
-- The governing timestamp (invoice date, payment date, or warehouse arrival)
-- The threshold at which an overdue invoice becomes operationally significant
-
-A metric with unresolved definitional questions must not be certified for decision use.
+These indicators are how the primary measure in 1.2 gets observed. A platform that mandates outcome-based success criteria for consumers but does not instrument its own is exempting itself from this document.
 
 ---
 
-## 3. Data Latency Standards
+## 2. Semantic Meaning Comes First
 
-### 3.1 Principle
+The most valuable thing the platform produces is not a dashboard. It is agreed meaning: what a customer is, what counts as revenue, when a renewal is a renewal, which timestamp governs. Infrastructure moves data. The semantic layer is what makes the data mean something, and meaning must be defined once, owned, and versioned.
 
-The purpose of low-latency analytics is to reduce the gap between an event and the organization's response, not to maximize refresh frequency. Latency requirements must be derived from decision cadence.
+Without a governed semantic layer, each report author applies independent interpretations: one filters cancelled transactions, another includes them; one uses invoice dates, another payment dates. Every report is individually defensible and the set is mutually inconsistent. That inconsistency is what kills trust, and trust is what makes a number decision-grade.
 
-### 3.2 Required assessment
+### 2.1 Measures vs. metrics
 
-Before implementing real-time or near-real-time delivery for a metric, teams must document:
+This distinction is where semantic layers break down. Do not conflate them.
 
-1. **Decision speed:** How quickly must the resulting decision be made? (e.g., fraud alerts in milliseconds; collections prioritization daily; board metrics once per reporting period)
-2. **Cost of partial data:** What is the impact of acting on incomplete data — for example, revenue shown before adjustments, cancellations, or reconciliations arrive?
-3. **Organizational response capability:** Can the consuming team act at the refresh frequency? A metric refreshed every minute is not justified if action occurs weekly.
+- **Measure:** a raw stored fact in a fact table. Stored in Silver at source grain.
+- **Metric:** a governed business calculation defined once in Gold, with a name, plain-English definition, aggregation rule, filters, time intelligence, grain, owner, and version.
 
-### 3.3 Data quality precondition
+You store measures. You define metrics. You report metrics to the business. One definition per metric name. Metrics reference measures, never other metrics. See the medallion practices doc for the storage rules.
 
-Real-time delivery must not be enabled for data with unresolved inconsistencies, duplication, late-arriving events, or incomplete mappings. High refresh frequency on unreliable data creates false precision.
-
----
-
-## 4. Semantic Layer Standards
-
-### 4.1 Requirement
-
-The platform must include a governed semantic layer that translates raw records into standardized business concepts (e.g., customer, active user, revenue, backlog, renewal, churn, risk, profit margin). Without one, each report author applies independent interpretations — one filtering cancelled transactions, another including them; one using invoice dates, another payment dates — producing reports that are individually defensible but mutually inconsistent.
-
-### 4.2 Required capabilities
+### 2.2 Semantic layer requirements
 
 The semantic layer must provide:
 
-- Definitions of business entities
-- Shared calculation logic for common KPIs
-- Consistent treatment of time and currency
-- Named ownership for each metric definition
-- Defined handling of late-arriving and corrected data
-- Tracking of definitional changes over time
-- Traceability from executive metrics to source records
+- [ ] Business entity definitions (customer, active user, revenue, backlog, renewal, churn)
+- [ ] Shared KPI calculations, referenced not copied
+- [ ] One rate source for currency; period boundaries from the conformed period dimension
+- [ ] A named owner per metric
+- [ ] A rule for late and corrected data: restate, append, or version
+- [ ] Version history for every definition change
+- [ ] Metric-to-source traceability
 
-### 4.3 Tool independence
+Two checks: lineage shows consumers reading governed definitions, never re-implementing them; two certified metrics converting the same amount on the same date return the same value.
 
-The semantic layer must be independent of the visualization tool, so that visualization tools can be replaced without changing metric logic.
+The semantic layer must be independent of the visualization tool. Definitions that live inside a BI tool are locked to that tool and diverge the moment a second tool appears.
 
----
+### 2.3 Metric definition completeness
 
-## 5. Data Modeling and Entity Resolution
+A metric is not defined until its edge cases are. Example: "outstanding receivables" must specify:
 
-### 5.1 Principle
+- [ ] Customer record resolution across source naming conventions
+- [ ] Treatment of disputed invoices and partial payments
+- [ ] Handling of customer ownership changes over time
+- [ ] Currency conversion method and rate source
+- [ ] The governing timestamp (invoice, payment, or warehouse arrival)
+- [ ] The threshold where an overdue invoice becomes operationally significant
 
-Data modeling choices (schema design, fact/dimension definitions, dimension change handling, aggregation) encode business decisions and must be reviewed as such, not treated as purely technical.
+A metric with unresolved definitional questions must not be certified for decision use. An ambiguous metric on a fast dashboard is a fast way to make a wrong call with confidence.
 
-### 5.2 Entity resolution governance
+### 2.4 Definition changes are versioned events
 
-Where entity resolution is required (e.g., Customer 360 across sales, billing, support, product usage, marketing, and third-party sources), exact matching is insufficient when the same entity appears under different legal entities, accounts, subsidiaries, or identifiers. Fuzzy matching and entity resolution algorithms may be used, subject to the following governance requirements. The business owner, not the algorithm, must decide:
+When a metric definition changes, the version boundary must be documented, consumers notified, and historical reporting must state which version produced which figures. A silent definition change invalidates every trend line built on the old one.
 
-- The confidence threshold at which a match is processed automatically
-- The conditions under which a record is routed for human review
-- The procedure for splitting merged records when a match proves false
-- The system-of-record precedence when sources conflict
+### 2.5 Reuse before build
 
----
+Before authoring a new metric, entity definition, or dataset, teams must check the semantic layer for an existing certified definition. If one exists, use it or extend it; do not create a parallel definition for a new use case. A new definition is justified only when the business meaning is genuinely different, and it must then carry a different name. Two names for the same meaning is a defect. One name for two meanings is worse.
 
-## 6. Historical Data Management
-
-### 6.1 Requirement
-
-Analytical systems must preserve historical states of dimensional attributes rather than overwriting them. Overwrite-in-place (e.g., updating a customer's region, sales rep assignment, or product category) is acceptable for operational applications but not for analytics: evaluating prior-period performance using current attribute values misstates history.
-
-### 6.2 Standard mechanism
-
-Slowly Changing Dimension Type 2 (or an equivalent mechanism preserving each attribute state and its validity interval) must be applied to attributes used in:
-
-- Sales territory performance evaluation
-- Customer segmentation
-- Product profit margin analysis
-- Ownership and assignment reporting
-- Regulatory reporting
-- Contract analytics
-- Forecast evaluation
-- Executive compensation calculations
-
-### 6.3 Acceptance criterion
-
-The platform must be able to answer "what did the business look like at time T" for any governed dimension.
+Extending is the normal path: domain-specific attributes and filters may build on a shared definition, but the shared keys, base measure references, and aggregation rules must not diverge. If a proposed extension changes any of those, it is a new version of the shared definition and goes through the owner, not a fork.
 
 ---
 
-## 7. Self-Service Analytics Standards
+## 3. Design Backward from the Decision
 
-### 7.1 Principle
+Platform and report design must begin with the decision and the decision-maker, not with the dashboard. Before designing metrics, semantic definitions, transformations, ingestion, or visualization, document:
 
-Self-service reduces dependence on centralized BI teams for routine exploration. Ungoverned self-service replaces one reporting bottleneck with many inconsistent reports. The standard is controlled freedom: users explore certified data without rebuilding business logic.
+- [ ] The decision and its owner
+- [ ] The decision frequency
+- [ ] The inputs that change the outcome
+- [ ] The maximum data age before the decision degrades
+- [ ] The smallest error that changes the decision, and the costlier direction
+- [ ] The exceptions that block the decision, and who resolves them
+- [ ] The actions that follow
+- [ ] The outcome measure and when it is checked
 
-### 7.2 Required layer separation
+Answers that fail review: "all available data," "real-time" (route through Section 5), and "100% accurate." Each one defers the tradeoff to the pipeline builder.
 
-Self-service environments must separate responsibilities into three layers:
-
-1. **Data engineering layer:** Ingestion, transformation, quality checks, orchestration, reliability
-2. **Governed analytics layer:** Shared entity definitions, metric certification, security rules, analytical models
-3. **Exploration layer:** Filtering, comparison, and visualization by business users
-
-### 7.3 Prohibited pattern
-
-Granting business users direct access to raw tables must not be classified as self-service. It constitutes distributed data engineering without standards.
-
----
-
-## 8. Executive Reporting Controls
-
-### 8.1 Elevated requirements
-
-Metrics used in investor communications, earnings, board meetings, and strategic planning are subject to stricter controls than operational dashboards:
-
-- Numbers must be reproducible
-- Metric logic must be traceable
-- Adjustments must be documented and explained
-- Refresh schedules must be predictable
-- Access must be controlled
-- The same metric must produce the same value for every authorized user
-
-### 8.2 Prohibited practices
-
-Executive reporting must not depend on manual spreadsheets, ad-hoc filters, one-off extracts, or other unrepeatable methods.
-
-### 8.3 Auditability requirements
-
-For every executive metric, the platform must be able to answer:
-
-- Where does this number come from?
-- Which source records were used in its calculation?
-- Which business rules were applied?
-- When was the data last refreshed?
-- Has the logic changed since the previous reporting period?
-- Who approved the metric definition?
-- How can the result be reproduced?
+Designing forward from infrastructure or visualization produces disconnected components that inform. Designing backward from the decision ensures every layer traces to a decision requirement. The test for the platform as a whole: it must reduce uncertainty at the moment of decision.
 
 ---
 
-## 9. Automation Standards
+## 4. The Trust Chain
 
-### 9.1 Objective
+A dashboard is the final interface of a larger system and can only be as trusted as the layers beneath it. A decision defended with a number is only as defensible as that chain. For every certified metric, the platform must document:
+
+- [ ] Ingestion path from source system to platform
+- [ ] Matching logic that resolves records across sources
+- [ ] Business rules applied, and the layer that applies them
+- [ ] Mechanism preserving historical attribute changes
+- [ ] Calculation producing the metric value
+- [ ] Handling of exceptions and corrections
+- [ ] Access controls on the data
+- [ ] Latency from source event to availability
+
+If any link is undocumented, the metric is informational, not decision-grade.
+
+---
+
+## 5. Latency Follows Decision Cadence
+
+The purpose of low-latency analytics is to shrink the gap between an event and the organization's response, not to maximize refresh frequency. Latency requirements must be derived from decision cadence.
+
+Before implementing real-time or near-real-time delivery for a metric, document:
+
+- [ ] **Decision speed:** the time from event to required decision
+- [ ] **Cost of partial data:** the impact of acting before corrections arrive
+- [ ] **Response capability:** the fastest cadence the consuming team can act on
+
+Calibration: fraud alerts need milliseconds, collections runs daily, board metrics move once per period. A per-minute refresh is not justified by weekly action.
+
+Real-time delivery must not be enabled for data with unresolved inconsistencies, duplication, late-arriving events, or incomplete mappings. High refresh frequency on unreliable data is false precision: it makes a shaky number look authoritative, which is worse than a slow number that is right.
+
+---
+
+## 6. History Is Evidence
+
+You cannot defend a prior-period decision using current attribute values. Evaluating last year's territory performance with this year's territory assignments misstates history and makes the resulting numbers indefensible.
+
+Analytical systems must preserve historical states of dimensional attributes rather than overwriting them. Overwrite-in-place is acceptable for operational applications, not for analytics.
+
+The criterion: SCD Type 2 (or an equivalent mechanism preserving each attribute state and its validity interval) must be applied to any attribute used to evaluate past performance, determine compliance, or calculate compensation. Examples: sales territory assignment, customer segment, product category and cost basis, account ownership, contract terms. The list of qualifying attributes grows over time; the criterion does not. If an attribute appears in a prior-period comparison anywhere, it qualifies.
+
+**Acceptance criterion:** the platform must be able to answer "what did the business look like at time T" for any governed dimension.
+
+---
+
+## 7. Entity Resolution Is a Business Decision
+
+Where entity resolution is required (a Customer 360 across sales, billing, support, product usage, marketing, and third-party sources), exact matching is insufficient when the same entity appears under different legal entities, accounts, subsidiaries, or identifiers. Fuzzy matching and entity resolution algorithms may be used, but the meaning of a match is a business decision, not a model output. The business owner, not the algorithm, must decide:
+
+- [ ] The confidence threshold for automatic match processing
+- [ ] The conditions that route a record to human review
+- [ ] The procedure for splitting a false merge
+- [ ] The system-of-record precedence when sources conflict
+
+---
+
+## 8. Self-Service Is Controlled Freedom
+
+Self-service reduces dependence on centralized BI teams for routine exploration. Ungoverned self-service replaces one reporting bottleneck with many inconsistent reports, and the inconsistency lands in the same meetings the platform was supposed to fix. The standard is controlled freedom: users explore certified data without rebuilding business logic.
+
+Self-service environments must separate three layers:
+
+1. **Data engineering layer:** ingestion, transformation, quality checks, orchestration, reliability
+2. **Governed analytics layer:** shared entity definitions, metric certification, security rules, analytical models
+3. **Exploration layer:** filtering, comparison, and visualization by business users
+
+Granting business users direct access to raw tables must not be classified as self-service. It is distributed data engineering without standards.
+
+---
+
+## 9. Executive Metrics Carry Elevated Controls
+
+Metrics used in investor communications, earnings, board meetings, and strategic planning are decisions being defended in public. They are subject to stricter controls than operational dashboards:
+
+- [ ] Documented and explained adjustments
+- [ ] A published refresh schedule
+- [ ] The same value for every authorized user
+
+Executive reporting must not depend on manual spreadsheets, ad-hoc filters, one-off extracts, or other unrepeatable methods. For every executive metric, the platform must produce on demand:
+
+- [ ] The origin of the number, end to end
+- [ ] The source records used in the calculation
+- [ ] The business rules applied
+- [ ] The timestamp of the last refresh
+- [ ] Logic changes since the previous reporting period
+- [ ] The approver of the metric definition
+- [ ] The procedure that reproduces the result
+
+---
+
+## 10. Automation Moves Attention to Judgment
 
 Automation must redirect analyst attention from data preparation to decision analysis. Time saved is a secondary measure; the primary measure is the shift in where attention is spent.
 
-### 9.2 Tasks to automate
+### 10.1 Automate the mechanical work
 
 The platform must eliminate recurring manual work including: file downloads, column reformatting, copying values between systems, reconciling repeated totals, updating presentation slides, repairing spreadsheet formulas, and explaining discrepancies between dashboards.
 
-### 9.3 Preserved human judgment
+### 10.2 Preserve the judgment
 
-Automation must not remove human judgment from decisions requiring business context. The intended analyst focus after automation includes: why a metric changed, which segments drive the change, whether the change is temporary or structural, which accounts require intervention, and which actions have the greatest impact.
+Automation must not remove human judgment from decisions requiring business context. The intended analyst focus after automation: why a metric changed, which segments drive the change, whether the change is temporary or structural, which accounts require intervention, and which actions have the greatest impact. That list is the insight-and-action work from Section 1. If automation does not free capacity for it, the automation optimized the wrong thing.
 
----
+### 10.3 Anomaly alerts must carry context
 
-## 10. Anomaly Detection Standards
+Anomaly detection identifies deviations; it does not explain them. An anomaly may reflect fraud, a technical malfunction, seasonality, contract renewals, pricing changes, or legitimate growth. Alerts without context create work; alerts with context start investigations. Alerts must include:
 
-### 10.1 Principle
-
-Anomaly detection identifies deviations; it does not explain them. An anomaly may reflect fraud, technical malfunction, seasonality, contract renewals, pricing changes, or legitimate growth. Alerts without context create work; alerts with context start investigations.
-
-### 10.2 Required alert context
-
-Anomaly alerts must include:
-
-- Expected interval
-- Observed value
-- Deviation magnitude
-- Historical comparison period
-- Related business dimensions
-- Possible data quality causes
-- Similar past events
-- Contributing records
+- [ ] Expected interval and observed value
+- [ ] Deviation magnitude and comparison period
+- [ ] Localizing dimensions (segment, region, channel)
+- [ ] Data quality status of contributing pipelines
+- [ ] Past occurrences and their resolution
+- [ ] The records driving the deviation
 
 ---
 
-## 11. Embedded Governance Requirements
+## 11. Governance Lives in the Platform
 
-### 11.1 Principle
+Governance must be enforced by the platform architecture, not by policy documents and committees. The compliant path must be the default path; compliance must not depend on individuals remembering policy.
 
-Governance must be enforced by the platform architecture, not solely by policy documents and committees. The compliant path must be the default path; compliance must not depend on individuals remembering policy.
+The control catalog is not restated here. Where each control lives, and how to check it:
 
-### 11.2 Required platform enforcement
+- **Access, environments, secrets, deployments:** the onboarding cloud resource policies (`docs/onboarding/cloud-resources/`). This doc adds one rule: consumers read certified Gold only (Section 8). Check: no consumer grant below Gold.
+- **Certification and labeling:** Section 1.1 and the acceptance checklist. The label lives in the catalog as governed metadata. Check: queryable for every published output.
+- **Lineage and audit:** the trust chain (Section 4) and executive audit items (Section 9). Check: every item producible from platform metadata alone, no humans required.
 
-The platform must enforce:
-
-- Role-based access control
-- Row-level and column-level security
-- Data lineage
-- Metric certification
-- Data quality validation
-- Retention rules
-- Audit logging
-- Environment separation
-- Controlled deployments
-- Ownership metadata
-
-### 11.3 Scaling consideration
-
-As more operational systems connect to centralized analytics and data movement becomes easier, governance of definitions, access, and usage becomes more critical, not less.
+As more operational systems connect to centralized analytics and data movement gets easier, governance of definitions, access, and usage becomes more critical, not less.
 
 ---
 
-## 12. Design Process: Work Backward from the Decision
+## Sharp edges
 
-### 12.1 Required starting point
+- **Informational outputs cited in decisions.** The most common failure mode. The dashboard was never certified, nobody noticed, and now a board number traces to it.
+- **Definitions living in the BI tool.** They diverge silently the moment a second tool or a second author appears. One definition, in the semantic layer, tool-independent.
+- **Silent definition changes.** A changed metric definition without a version boundary corrupts every trend built on the old one, and nobody can say when the break happened.
+- **False precision.** Real-time refresh on unreconciled data makes wrong numbers look authoritative. Latency must follow decision cadence, not technical capability.
+- **Overwritten history.** Current attribute values applied to prior periods make executive and regulatory numbers indefensible. There is no retroactive fix; the history is gone.
+- **Raw-table self-service.** It demos well and decays into distributed data engineering with no standards, surfacing as KPI disagreements months later.
+- **Context-free anomaly alerts.** They train users to ignore alerts, which defeats the reason for having them.
 
-Platform and report design must begin with the decision and the decision-maker, not with the dashboard. Before designing metrics, semantic definitions, transformations, ingestion, or visualization, teams must document:
+## Acceptance checklist
 
-1. What decision will be made?
-2. How frequently is it made?
-3. What information influences it?
-4. How current must the information be?
-5. What accuracy is required?
-6. How should exceptions be explained?
-7. What actions follow from the insight?
-8. How will the outcome be measured?
+A published output is decision-grade only if all of the following hold:
 
-### 12.2 Rationale
+- [ ] Decision, decision-maker, and follow-on action documented
+- [ ] One governed definition per metric, with owner and version
+- [ ] Each metric reuses or extends an existing definition, or documents why its meaning is new (Section 2.5)
+- [ ] Definitional edge cases resolved (Section 2.3)
+- [ ] Latency assessment documented and matched to decision cadence
+- [ ] History preserved for governed dimensions; the time-T state is answerable
+- [ ] All eight trust chain items documented (Section 4)
+- [ ] The same value for every authorized user, reproducibly
+- [ ] No manual spreadsheet step between platform and decision
 
-Designing forward from infrastructure or visualization produces disconnected components. Designing backward from the decision ensures every platform layer traces to a decision requirement. The standard for the platform as a whole: it must reduce uncertainty at the moment of decision.
+Anything that fails this checklist may still be published, labeled informational. It must not be certified.
+

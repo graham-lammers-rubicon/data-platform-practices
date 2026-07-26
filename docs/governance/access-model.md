@@ -38,13 +38,18 @@ Defines who can read and write each medallion layer, how access is requested, an
 
 ## Requesting access
 
-> **Status: stub.** The request and approval workflow is not yet documented.
+Two request shapes exist. Both leave an auditable trail; neither is a chat message.
 
-To be written:
+**Joining an existing role** (the common case): request membership in the matching `grp-<role>-<scope>-<env>` Entra group through the group owner's approval process. Membership is managed in Entra only; AIM syncs it ([Identity provisioning](#identity-provisioning)). Owners: domain groups are owned by the data owner, platform groups by the platform team. Target turnaround: two business days.
 
-- Where to submit workspace and data access requests
-- Approval roles and expected turnaround
-- Access review cadence and revocation
+**A new access shape** (new group, new grant, or an exception like analyst Silver access): a PR to the infrastructure repo adding the group or grant in Terraform, linking the justification (the spec or decision it serves). Approvers: the data owner for the scope plus a platform engineer. Exceptions are time-boxed in the PR description with an expiry date. Target turnaround: five business days.
+
+Review and revocation:
+
+- Quarterly access review: group memberships against role rosters, and the Terraform grant set against the access matrix. Findings are PRs, not notes.
+- Offboarding is automatic for identity: Entra removal deactivates the user via AIM. Token revocation is the explicit extra step ([sharp edges](#sharp-edges)).
+- A grant whose purpose ended is removed by PR when the owning product retires, not left until the next review finds it.
+- Break-glass access (incident response) is granted by the platform team, time-boxed, and reviewed at the next working day; the audit trail is `system.access.audit`.
 
 ## Sharp edges
 

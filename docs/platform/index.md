@@ -4,7 +4,7 @@ Infrastructure reference for the Azure-hosted Databricks platform. Owned by plat
 
 ## Pages
 
-- [Azure infrastructure](azure-infrastructure.md) - resource layout, VNet injection, Unity Catalog wiring, Terraform standard
+- [Azure infrastructure](azure-infrastructure.md) - serverless workspaces, NCC connectivity, Unity Catalog wiring, identity, Terraform standard
 - [Environments](environments.md) - two workspace tiers, environment-per-catalog, one-way cross-tier access, bundle-only promotion
 - [CI/CD and deployment](cicd-and-deployment.md) - GitHub Actions pipeline, promotion gates, OIDC deployment identity, rollback
 - [Compute policies](compute-policies.md) - workload classes, sizing, termination, cost attribution

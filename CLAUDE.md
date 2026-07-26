@@ -18,9 +18,10 @@ docs/
     medallion-data-practices.md
     analytical-dataset-language.md
     bi-practices-guidance.md
+    genie-and-metric-views.md    Metric views as the metric layer; Genie spaces as code
     tidy-data.md
   platform/                      Infrastructure reference: Azure + Databricks
-    azure-infrastructure.md      Resource layout, VNet injection, UC wiring, Terraform
+    azure-infrastructure.md      Serverless workspaces, NCC connectivity, UC wiring, identity, Terraform
     environments.md              Two tiers (prod/np), env-per-catalog, DAB-only promotion
     cicd-and-deployment.md       GitHub Actions, promotion gates, OIDC identity
     compute-policies.md          Workload classes, policy set, cost attribution
@@ -45,7 +46,8 @@ When adding a page, register it in the parent `index.md`. Keep the doc tree and 
 - Every practice doc states what it covers, the rules, the sharp edges (failure modes), and a checklist or acceptance criterion. A rule without a way to verify compliance is incomplete.
 - Cite primary sources (official Databricks docs, standards, papers) at the bottom of each doc. Do not assert platform behavior from memory; verify against docs or the relevant skill first.
 - Plain language, short sentences, no filler. No em dashes.
-- Examples use SQL or Lakeflow Spark Declarative Pipelines syntax consistent with current Databricks documentation. `LIVE.` syntax is legacy; use fully qualified `catalog.schema.table` names for cross-pipeline reads.
+- Examples use SQL or Lakeflow Spark Declarative Pipelines syntax consistent with current Databricks documentation. `LIVE.` and `APPLY CHANGES INTO` are legacy; use `CREATE FLOW ... AS AUTO CDC INTO`. Pipeline code uses two-part `schema.table` names; the catalog comes from the bundle target, never hardcoded.
+- Cite the Azure version of Databricks docs (`learn.microsoft.com/en-us/azure/databricks/...`), never `docs.databricks.com/aws/...`.
 
 ---
 
@@ -80,13 +82,14 @@ No layer prefixes in table or column names. The schema tells you the layer; the 
 ### Bronze: capture everything, transform nothing
 
 - Raw, append-only, schema-on-read. One table per source entity. No joins, casting, renaming, or business logic.
-- Always configure `rescuedDataColumn`. Add system columns on ingest: `_ingest_timestamp`, `_source_file`, `_pipeline_id`, `_is_quarantined`, `_raw_payload`.
+- Always configure `rescuedDataColumn => '_rescued_data'`. Add system columns on ingest: `_ingest_timestamp`, `_source_file`, `_rescued_data`.
 - Wide or messy source shapes land as-is. Restructuring is Silver's job.
-- **SCD Type 2 belongs in Bronze** in this practice, via Lakeflow AUTO CDC with `STORED AS SCD TYPE 2`. A dimension change arriving from source is a source event; if Bronze drops the prior version, history is unrecoverable. Silver reads the versioned entity and does not reconstruct history.
+- CDC feeds land as append-only event tables, operations and sequence columns intact. No changes are applied in Bronze; the event log is the replay source for all downstream state.
 
 ### Silver: validate, clean, conform
 
 - Cast types, deduplicate, handle nulls, apply conformed keys. Declare quality expectations with EXPECT constraints (DROP ROW or FAIL UPDATE). Never write to Silver directly from source.
+- **SCD Type 2 is derived in Silver** via `CREATE FLOW ... AS AUTO CDC INTO ... STORED AS SCD TYPE 2`, reading the Bronze event table. It is rebuildable by replay; a backfill means full-refreshing the Silver target, never re-feeding events into an existing one.
 - Silver is long and atomic: one variable per column, one observation per row, grain declared in the table COMMENT. Unpivot wide source shapes here. Split compound codes into typed columns.
 - Store raw measures at source grain. No business metric calculations.
 - Semi-additive measures (balances, headcount, inventory) are labeled in the column COMMENT. Non-additive ratios are not stored; store numerator and denominator components separately.
@@ -101,16 +104,20 @@ No layer prefixes in table or column names. The schema tells you the layer; the 
 
 ### Access matrix
 
+Authoritative version, with the environment axis and job identities: `docs/governance/access-model.md`. Summary:
+
 | Role | Bronze | Silver | Gold |
 | --- | --- | --- | --- |
-| Pipeline service principal | WRITE | WRITE | WRITE |
-| Data engineers | READ | READ/WRITE | READ |
+| Domain pipeline SP | READ/WRITE (own domain) | READ/WRITE (own domain) | READ/WRITE (own domain) |
+| Data engineers | READ | dev: READ/WRITE; nonprod/prod: READ | READ |
 | Analysts / data scientists | none | READ (approved) | READ |
 | Consuming services | none | none | READ |
 
+Human WRITE exists only in `dev_catalog`. Write isolation between domains sharing a schema comes from table ownership.
+
 ### Pipeline architecture
 
-One Lakeflow SDP pipeline per domain, owning Bronze through Gold for that scope. Cross-domain Gold joins run in a separate pipeline or job after upstream Silver completes. All writes route through UC managed tables; writes outside Lakeflow create lineage gaps.
+One Lakeflow SDP pipeline per domain, owning Bronze through Gold for that scope. Conformed dimensions are built by the platform-owned `conformed-dimensions` pipeline. Cross-domain Gold joins run in a separate pipeline or job, as their own service principal, after upstream Silver completes. Writes outside the pipeline bypass expectations and the declared contract; route all writes through the domain pipeline.
 
 ---
 
@@ -142,6 +149,7 @@ This distinction is where semantic layers break down. Do not conflate them.
 - You store measures. You define metrics. You report metrics to the business.
 - One definition per metric name. Metrics reference measures, not other metrics. Definitions are versioned; when one changes, the version boundary is documented.
 - Non-additive metrics declare how they aggregate across dimensions (total conversions / total clicks, not the average of channel rates).
+- Metrics are implemented as Unity Catalog metric views (`gold.<domain>_metrics`), consumed by dashboards and Genie from the same definition. See `docs/practices/genie-and-metric-views.md`.
 
 ### Decision-first design (BI standard)
 

@@ -11,12 +11,20 @@ Defines who can read and write each medallion layer, how access is requested, an
 
 ## Access matrix
 
+The matrix applies per environment (`dev_catalog`, `nonprod_catalog`, `prod_catalog`). Where a cell differs by environment, the environment is stated.
+
 | Role | Bronze | Silver | Gold |
 | --- | --- | --- | --- |
-| Pipeline service principal | WRITE | WRITE | WRITE |
-| Data engineers | READ | READ/WRITE | READ |
-| Analysts / data scientists | none | READ (approved) | READ |
-| Consuming services | none | none | READ |
+| Domain pipeline SP (`sp-<domain>-pipeline-<env>`) | READ/WRITE (own domain) | READ/WRITE (own domain); READ conformed dimensions | READ/WRITE (own domain) |
+| Conformed-dimensions pipeline SP | READ (its sources) | READ/WRITE (dimension tables) | none |
+| Cross-domain Gold job SP (`sp-<subject>-gold-<env>`) | none | READ (named source domains) | READ/WRITE (its objects) |
+| Data engineers | READ | dev: READ/WRITE. nonprod/prod: READ | READ |
+| Analysts / data scientists | none | READ (approved, prod) | READ |
+| Consuming services | none | none | READ (prod) |
+
+- Human WRITE exists only in `dev_catalog`, through a developer's own `mode: development` deploys. In `nonprod` and `prod`, every write path is a service principal; this is the same rule as "Human identities do not hold production WRITE" below.
+- A pipeline SP's WRITE means `USE SCHEMA` plus `CREATE TABLE` on the layer schemas; it owns the tables its pipeline creates and holds no MODIFY on other domains' tables. Ownership is the write-isolation boundary between domains sharing a layer schema.
+- A cross-domain Gold job declares the Silver domains it reads in its spec; its SP is granted exactly those.
 
 ## Rules
 

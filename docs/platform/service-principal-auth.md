@@ -29,6 +29,15 @@ The [Databricks recommendation](https://learn.microsoft.com/en-us/azure/databric
 
 Name patterns: [Naming conventions](naming-conventions.md).
 
+## Human authentication
+
+Humans authenticate the Databricks CLI and IDE integrations with OAuth user-to-machine (U2M), never PATs.
+
+- `databricks auth login --host https://<workspace-url> --profile <name>` runs a browser login and writes a profile to `~/.databrickscfg` with auth type `databricks-cli`. Tokens are short-lived (under an hour) and refreshed by the CLI.
+- From CLI v1.0, tokens live in OS-native secure storage; `.databrickscfg` holds only host and profile name, never a credential.
+- Keep one profile per workspace tier (`np`, `prod`). Developer bundle deploys to the `dev` target use the nonprod profile; auth resolves bundle settings, then environment variables, then profiles.
+- Human auth is for development in the nonprod workspace. `nonprod` and `prod` targets deploy only from CI as the deploy SP ([Environments](environments.md)).
+
 ## Rules
 
 - Every production workload runs as a service principal. `mode: production` targets set `run_as` to the pipeline or deploy SP; a job owned by a human identity in `nonprod` or `prod` is a defect.
@@ -65,6 +74,7 @@ Name patterns: [Naming conventions](naming-conventions.md).
 
 ## Sources
 
+- Azure Databricks: [Databricks CLI authentication](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/cli/authentication)
 - Azure Databricks: [Service principals](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/service-principals)
 - Azure Databricks: [Manage service principals](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/manage-service-principals)
 - Azure Databricks: [Enable workload identity federation for GitHub Actions](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/auth/provider-github)

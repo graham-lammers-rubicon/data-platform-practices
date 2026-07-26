@@ -51,7 +51,7 @@ History is how humans and agents reconstruct intent; `fix`, `wip`, and `updates`
 
 ## Sources
 
-- Databricks: [COMMENT ON](https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-syntax-ddl-comment)
-- Databricks: [INFORMATION_SCHEMA.COLUMNS](https://docs.databricks.com/aws/en/sql/language-manual/information-schema/columns)
+- Databricks: [COMMENT ON](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-syntax-ddl-comment)
+- Databricks: [INFORMATION_SCHEMA.COLUMNS](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/information-schema/columns)
 - Pro Git: [Commit guidelines](https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines)
 - Python: [PEP 8, Comments](https://peps.python.org/pep-0008/#comments), [PEP 257, Docstring Conventions](https://peps.python.org/pep-0257/)

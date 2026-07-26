@@ -1,38 +1,38 @@
 # Medallion Architecture: Data Practices Reference
 
-Databricks coined the term. The multi-hop layering concept is decades older. The name stuck, the pattern spread — Microsoft Fabric, Snowflake, Iceberg stacks all run it now. It belongs to the industry.
-
-> **Bronze, Silver, Gold are data with receipts. Not folder names. Not a naming convention. A structural promise between data producers and every service that consumes it.**
+Bronze, Silver, Gold is a structural promise between data producers and every service that consumes it. Not folder names. Not a naming convention.
 
 | Layer | Quality | Consumers |
 |---|---|---|
 | **Bronze** | Raw | Silver pipelines only |
 | **Silver** | Validated | Gold pipelines, data science |
-| **Gold** | Governed, Trusted | Analytics, GenAI, APIs, MCP |
+| **Gold** | Governed, trusted | Analytics, GenAI, APIs, MCP |
 
 ---
 
 ## Unity Catalog: The Governance Spine
 
-Every layer lives inside Unity Catalog. That is not optional.
+Every layer lives inside Unity Catalog. Not optional.
 
-UC gives you fine-grained access control at the catalog, schema, table, row, and column level. It captures lineage automatically as data moves Bronze to Silver to Gold — queryable in `system.access.table_lineage`. Every read and write is audited in `system.access.audit`. No spreadsheet required. And no prefixes in table or column names — the schema tells you the layer, the COMMENT tells you what it is. Prefixes are a legacy habit from a world without metadata. That world is gone.
+UC gives fine-grained access control at catalog, schema, table, row, and column level. Lineage is captured automatically and queryable in `system.access.table_lineage`. Reads and writes are audited in `system.access.audit`. No prefixes in table or column names: the schema tells you the layer, the COMMENT tells you what it is.
 
 > **If any consuming service has a connection string pointing at Bronze, something has gone badly wrong.**
 
-Recommended structure:
+Structure:
 
 ```
 <env>_catalog
   ├── bronze    →  <entity>              (streaming tables, UC managed)
-  ├── silver    →  <domain>              (fact tables, UC managed)
+  ├── silver    →  <domain>              (fact tables and entities, UC managed)
   └── gold      →  <domain>_<grain>      (materialized views or Delta, UC managed)
 ```
 
+The access matrix is authoritatively defined in the [Access model](../governance/access-model.md). Summary:
+
 | Role | Bronze | Silver | Gold |
 |---|---|---|---|
-| Pipeline service principal | WRITE | WRITE | WRITE |
-| Data engineers | READ | READ/WRITE | READ |
+| Pipeline service principal | READ/WRITE | READ/WRITE | READ/WRITE |
+| Data engineers | READ | READ/WRITE (dev only) | READ |
 | Analysts / data scientists | ✗ | READ (approved) | READ |
 | Downstream consuming services | ✗ | ✗ | READ |
 
@@ -41,22 +41,22 @@ Recommended structure:
 
 # 🥉 Bronze — Capture Everything, Transform Nothing
 
-> **Bronze is a crime scene. Land the data exactly as it arrived. Touch nothing. Every byte is evidence.**
+> **Land the data exactly as it arrived. Touch nothing.**
 
-Raw. Append-only. Schema-on-read. One table per source entity. No joins, no casting, no renaming, no business logic. Full stop.
+Raw. Append-only. Schema-on-read. One table per source entity. No joins, no casting, no renaming, no business logic.
 
-Sources land here in whatever form they arrive — batch files, streaming events, or CDC feeds from operational systems. Databricks [recommends storing most fields](https://docs.databricks.com/aws/en/lakehouse/medallion) as `STRING`, `VARIANT`, or binary to survive unexpected schema changes. Add system columns on ingest. Always configure `rescuedDataColumn` — skip it and unknown fields vanish silently, and you'll find out six months later.
+Sources land here as batch files, streaming events, or CDC feeds. Databricks [recommends storing most fields](https://learn.microsoft.com/en-us/azure/databricks/lakehouse/medallion) as `STRING`, `VARIANT`, or binary to survive schema changes. Always configure `rescuedDataColumn`; without it, fields that fail schema match are dropped silently.
 
 **System columns:**
 ```sql
 _ingest_timestamp   TIMESTAMP   -- arrival time
 _source_file        STRING      -- origin path or topic
-_pipeline_id        STRING      -- Lakeflow run ID
-_is_quarantined     BOOLEAN     -- failed validation
-_raw_payload        STRING      -- rescue column
+_rescued_data       STRING      -- rescue column: fields that failed schema match
 ```
 
-Bronze lands data in whatever shape the source sends it. Wide columns, compound codes, mixed types — all of it. That is intentional. The structure problem is Silver's to solve.
+`_rescued_data` holds only the fields that did not match the schema. It is not a full copy of the payload; the table row is the payload.
+
+Wide columns, compound codes, mixed types all land as-is. Restructuring is Silver's job.
 
 ```sql
 -- Example: source lands month columns as values, not a variable
@@ -69,58 +69,44 @@ orders (
   mar_revenue     STRING,
   _ingest_timestamp TIMESTAMP,
   _source_file      STRING,
-  _is_quarantined   BOOLEAN,
-  _raw_payload      STRING
+  _rescued_data     STRING
 )
 ```
 
 **Pattern (Lakeflow SDP):**
 ```sql
-CREATE OR REFRESH STREAMING TABLE orders
+CREATE OR REFRESH STREAMING TABLE bronze.orders
 COMMENT 'Raw OMS order events. Append-only. Source of truth for reprocessing.'
-TBLPROPERTIES ('quality' = 'bronze')
 AS SELECT
   *,
   current_timestamp()   AS _ingest_timestamp,
-  _metadata.file_path   AS _source_file,
-  false                 AS _is_quarantined
+  _metadata.file_path   AS _source_file
 FROM STREAM read_files(
-  '/Volumes/raw/landing/orders/',
+  '${landing_root}/orders/',
   format            => 'json',
   schemaHints       => 'order_id STRING, order_date DATE, customer_id STRING',
-  rescuedDataColumn => '_raw_payload'
+  rescuedDataColumn => '_rescued_data'
 );
 ```
 
-## SCD Type 2 Belongs in Bronze
+`${landing_root}` is a pipeline configuration parameter set per bundle target (see [Pipeline architecture](#pipeline-architecture)). Never hardcode a catalog or environment in pipeline code.
 
-This is a genuine holy war. The conventional placement is Silver or Gold. Here's the case for Bronze.
+## CDC feeds: land the events, apply them in Silver
 
-The standard argument: history tracking is a "transformation," therefore Silver's job. That collapses the moment you ask — *what exactly is Silver transforming if Bronze didn't preserve the change?*
+A CDC feed lands in Bronze as an append-only event table: every insert, update, and delete event, with its operation and sequence columns, exactly as the source sent it. Do not apply the changes here. The event log is the history; any downstream state, including SCD2, can be rebuilt from it by replay.
 
-> **If Bronze drops the prior version of a record, the history is gone. You cannot reconstruct it from Silver. You cannot reconstruct it from Gold. It is gone.**
-
-A dimension change arriving from source *is* source truth. The customer moved regions. The product was reclassified. That event happened at the source. Bronze is the system of record for source events — capturing it as a versioned row with `__START_AT` and `__END_AT` (as Lakeflow AUTO CDC produces) is faithful recording of what happened, not a business transformation.
-
-Putting SCD2 in Silver also creates a responsibility collision: Silver now cleans *and* reconstructs history, with a fragile dependency on event ordering in streaming pipelines. Silver reads a versioned entity from Bronze and gets on with its actual job.
-
-**Pattern — SCD2 in Bronze via AUTO CDC:**
 ```sql
-CREATE OR REFRESH STREAMING TABLE customer
-COMMENT 'Customer entity with full SCD2 history. Source-faithful. Versions preserved at ingest.'
-TBLPROPERTIES ('quality' = 'bronze');
-
-APPLY CHANGES INTO LIVE.customer
+CREATE OR REFRESH STREAMING TABLE bronze.customer
+COMMENT 'Raw customer CDC events. Append-only. One row per change event. Replay source for silver.customer.'
+AS SELECT
+  *,
+  current_timestamp()   AS _ingest_timestamp,
+  _metadata.file_path   AS _source_file
 FROM STREAM read_files(
-  '/Volumes/raw/landing/customer_cdc/',
+  '${landing_root}/customer_cdc/',
   format            => 'json',
-  rescuedDataColumn => '_raw_payload'
-)
-KEYS (customer_id)
-APPLY AS DELETE WHEN operation = 'DELETE'
-SEQUENCE BY updated_at
-COLUMNS * EXCEPT (operation, _raw_payload)
-STORED AS SCD TYPE 2;
+  rescuedDataColumn => '_rescued_data'
+);
 ```
 
 ---
@@ -128,25 +114,24 @@ STORED AS SCD TYPE 2;
 
 # 🥈 Silver — Validate, Clean, Conform
 
-> **Silver is where raw data earns the right to be trusted.** Nothing leaves without being typed, deduplicated, and quality-checked. Do not write directly to Silver from source — bypass Bronze and you lose your audit trail and your ability to reprocess.
+> **Silver is where raw data earns the right to be trusted.** Nothing leaves without being typed, deduplicated, and quality-checked. Never write to Silver directly from source; bypassing Bronze loses the audit trail and the ability to reprocess.
 
-Cast types. Enforce naming standards. Handle nulls. Deduplicate. Apply conformed keys. Declare quality expectations with EXPECT constraints — bad rows get dropped or quarantined, not passed downstream. No business metric calculations. Silver stores raw measures at source grain and nothing more.
+Cast types. Handle nulls. Deduplicate. Apply conformed keys. Declare quality expectations with EXPECT constraints; bad rows are dropped or fail the update, never passed downstream. No business metric calculations: Silver stores raw measures at source grain.
 
 | Grain type | Lakeflow pattern | Behavior |
 |---|---|---|
-| Transaction | Streaming Table | Append on event |
-| Periodic Snapshot | Streaming Table + MERGE | Insert every entity-period, even with no activity |
-| Accumulating Snapshot | Streaming Table + AUTO CDC | Row updated as milestones complete |
+| Transaction | Streaming table | Append on event |
+| Periodic snapshot | Materialized view | One row per entity-period, recomputed as periods close |
+| Accumulating snapshot | AUTO CDC flow (SCD1) | Row updated as milestones complete |
 
 **Pattern — transaction grain:**
 ```sql
-CREATE OR REFRESH STREAMING TABLE orders (
+CREATE OR REFRESH STREAMING TABLE silver.orders (
   CONSTRAINT valid_revenue     EXPECT (revenue_usd >= 0)        ON VIOLATION DROP ROW,
   CONSTRAINT required_date     EXPECT (order_date IS NOT NULL)  ON VIOLATION FAIL UPDATE,
   CONSTRAINT required_customer EXPECT (customer_id IS NOT NULL) ON VIOLATION DROP ROW
 )
-COMMENT 'Cleaned order lines. One row per order line. Typed, validated, quarantine-filtered.'
-TBLPROPERTIES ('quality' = 'silver')
+COMMENT 'Cleaned order lines. Grain: one row per order line per calendar day. Typed and validated.'
 AS SELECT
   o.order_id,
   o.order_line_id,
@@ -157,13 +142,36 @@ AS SELECT
   CAST(o.revenue     AS DECIMAL(18,4))  AS revenue_usd,
   CAST(o.discount    AS DECIMAL(18,4))  AS discount_usd,
   CAST(o.shipped_qty AS BIGINT)         AS shipped_quantity
-FROM STREAM(prod_catalog.bronze.orders) o
-WHERE o._is_quarantined = false;
+FROM STREAM(bronze.orders) o;
 ```
 
-Point-in-time balance measures (headcount, inventory, account balances) cannot be summed across time — label them semi-additive in the column COMMENT. Non-additive measures (rates, ratios) don't belong here at all; store numerator and denominator separately and compute the ratio in Gold.
+## SCD Type 2 lives in Silver
 
-Silver tables declare their grain in the COMMENT and store one variable per column, one observation per row. Wide source shapes are unpivoted here. Compound source codes are split into typed columns. The structure is long and atomic — ready to aggregate in any direction.
+Bronze holds the append-only change events. Silver derives the versioned entity from them with Lakeflow AUTO CDC. This is the split that preserves both fidelity and rebuildability:
+
+- The Bronze event table is the history. Nothing is lost when Silver is rebuilt; a full refresh replays the events and reproduces every version.
+- Applying changes is a transformation: AUTO CDC sequences events, applies deletes, and drops columns. That work belongs in Silver, not in the layer whose contract is "transform nothing." An SCD2 table is also updated in place (end-dating), which breaks Bronze's append-only rule.
+
+**Pattern — SCD2 via AUTO CDC (current syntax; `APPLY CHANGES INTO` and `LIVE.` are legacy):**
+```sql
+CREATE OR REFRESH STREAMING TABLE silver.customer
+COMMENT 'Customer entity with full SCD2 history. Grain: one row per customer per version. Rebuildable from bronze.customer.';
+
+CREATE FLOW customer_scd2 AS
+AUTO CDC INTO silver.customer
+FROM STREAM(bronze.customer)
+KEYS (customer_id)
+APPLY AS DELETE WHEN operation = 'DELETE'
+SEQUENCE BY updated_at
+COLUMNS * EXCEPT (operation, _rescued_data, _ingest_timestamp, _source_file)
+STORED AS SCD TYPE 2;
+```
+
+Current versions: `WHERE __END_AT IS NULL`. Point-in-time: `__START_AT <= t AND (__END_AT > t OR __END_AT IS NULL)`. The system columns excluded above remain queryable in `bronze.customer`.
+
+Point-in-time balance measures (headcount, inventory, balances) cannot be summed across time; label them semi-additive in the column COMMENT. Ratios do not belong here at all: store numerator and denominator, compute the ratio in Gold.
+
+Silver tables declare their grain in the COMMENT and store one variable per column, one observation per row. Wide source shapes are unpivoted here. Compound codes are split into typed columns. The structure is long and atomic, ready to aggregate in any direction.
 
 ```sql
 -- Grain declared: one row per order line per calendar day
@@ -180,7 +188,7 @@ orders (
   ordered_quantity  BIGINT    COMMENT 'Additive — safe to SUM across all dimensions',
   revenue_usd       DECIMAL   COMMENT 'Additive — safe to SUM across all dimensions',
   discount_usd      DECIMAL   COMMENT 'Additive — safe to SUM across all dimensions',
-  shipped_quantity  BIGINT    COMMENT 'Additive — stored as component for fill_rate_pct in Gold'
+  shipped_quantity  BIGINT    COMMENT 'Additive — component for fill_rate_pct in Gold'
 )
 ```
 
@@ -189,24 +197,23 @@ orders (
 
 # 🥇 Gold — Govern, Enrich, Serve
 
-> **Gold is the governed semantic layer — the single trusted source for analytics pipelines, vector stores, GenAI retrieval indexes, REST APIs, and MCP servers alike. Every object has an owner, a definition, and a version. Design it once, for all of them. Without it, every consuming service invents its own truth.**
+> **Gold is the governed semantic layer: the single trusted source for analytics, vector stores, GenAI retrieval, REST APIs, and MCP servers. Every object has an owner, a definition, and a version.**
 
-Materialized views are the default for frequently accessed aggregations. Pre-aggregated Delta tables when query performance demands it. Non-additive outputs must expose numerator and denominator as separate columns — do not make consumers reverse-engineer your math.
+Materialized views are the default for aggregations. Pre-aggregated Delta tables when query performance demands it. Governed business metrics are defined as [Unity Catalog metric views](genie-and-metric-views.md) over Gold and Silver objects: one YAML definition, safe re-aggregation, native Genie and dashboard integration.
 
-Gold tables are wide by design — intentionally shaped for consumption. Where Silver is long and atomic, Gold aggregates to a declared grain and exposes governed outputs. The structure must pivot cleanly: entity rows × period columns × one additive measure. Non-additive outputs are pre-computed at the declared grain and must not be re-aggregated.
+Gold serving tables are wide by design, aggregated to a declared grain. The structure must pivot cleanly: entity rows × period columns × one additive measure. A non-additive output may be exposed at the declared grain only, with numerator and denominator as separate columns and a do-not-re-aggregate COMMENT. Gold reads Silver, never Bronze.
 
 ```sql
 -- Grain: one row per product per calendar month
 -- Pivot test: product × month × revenue_usd must return valid result
--- Non-additive fill_rate_pct: components stored separately for verification
-sales_by_product_month (
-  product_name      STRING,
+sales_product_monthly (
+  product_sku       STRING,
   calendar_year     INT,
   calendar_month    INT,                -- period at declared grain
   ordered_quantity  BIGINT    COMMENT 'Additive',
   revenue_usd       DECIMAL   COMMENT 'Additive',
-  shipped_quantity_num BIGINT COMMENT 'Numerator for fill_rate_pct — verify independently',
-  ordered_quantity_den BIGINT COMMENT 'Denominator for fill_rate_pct — verify independently',
+  shipped_quantity_num BIGINT COMMENT 'Numerator for fill_rate_pct',
+  ordered_quantity_den BIGINT COMMENT 'Denominator for fill_rate_pct',
   fill_rate_pct     DECIMAL   COMMENT 'Non-additive. Computed at this grain only. Do not re-aggregate.'
 )
 TBLPROPERTIES (
@@ -218,28 +225,27 @@ TBLPROPERTIES (
 
 **Pattern — materialized view:**
 ```sql
-CREATE OR REFRESH MATERIALIZED VIEW sales_by_product_month
-COMMENT 'Monthly revenue by product. Owner: RevOps. v1 2025-01-01.'
+CREATE OR REFRESH MATERIALIZED VIEW gold.sales_product_monthly
+COMMENT 'Monthly sales by product. Grain: one row per product per calendar month. Owner: RevOps. v1 2025-01-01.'
 TBLPROPERTIES ('quality' = 'gold', 'metric.owner' = 'revops', 'metric.version' = '1')
 AS SELECT
-  p.product_name,
+  s.product_sku,
   pr.calendar_year,
   pr.calendar_month,
-  SUM(s.ordered_quantity)                                        AS ordered_quantity,
+  SUM(s.ordered_quantity)                                       AS ordered_quantity,
   SUM(s.revenue_usd)                                            AS revenue_usd,
   SUM(s.shipped_quantity)                                       AS shipped_quantity_num,
   SUM(s.ordered_quantity)                                       AS ordered_quantity_den,
-  SAFE_DIVIDE(SUM(s.shipped_quantity), SUM(s.ordered_quantity)) AS fill_rate_pct
-FROM prod_catalog.silver.orders s
-JOIN prod_catalog.bronze.customer c ON c.customer_id = s.customer_id AND c.__END_AT IS NULL
-JOIN prod_catalog.silver.period  pr ON pr.calendar_date = s.order_date
-GROUP BY p.product_name, pr.calendar_year, pr.calendar_month;
+  try_divide(SUM(s.shipped_quantity), SUM(s.ordered_quantity))  AS fill_rate_pct
+FROM silver.orders s
+JOIN silver.period pr ON pr.calendar_date = s.order_date
+GROUP BY s.product_sku, pr.calendar_year, pr.calendar_month;
 ```
 
 **Pattern — cross-domain join (define once, not per consumer):**
 ```sql
-CREATE OR REFRESH MATERIALIZED VIEW customer_acquisition_cost
-COMMENT 'CAC by channel per month. Owner: RevOps. Spans marketing_spend + headcount + orders.'
+CREATE OR REFRESH MATERIALIZED VIEW gold.customer_acquisition_cost
+COMMENT 'CAC by channel per month. Grain: one row per channel per calendar month. Owner: RevOps.'
 AS SELECT
   c.channel_name,
   pr.calendar_year,
@@ -247,16 +253,16 @@ AS SELECT
   SUM(m.spend_usd)                 AS marketing_spend_usd,
   SUM(h.salary_cost_usd)           AS sales_cost_usd,
   COUNT(DISTINCT s.entity_key)     AS new_customers,
-  SAFE_DIVIDE(
+  try_divide(
     SUM(m.spend_usd) + SUM(h.salary_cost_usd),
-    NULLIF(COUNT(DISTINCT s.entity_key), 0)
+    COUNT(DISTINCT s.entity_key)
   )                                AS cac_usd
-FROM prod_catalog.silver.channel c
-JOIN prod_catalog.silver.period pr USING (period_key)
-LEFT JOIN prod_catalog.silver.marketing_spend m ON m.channel_key = c.channel_key AND m.period_key = pr.period_key
-LEFT JOIN prod_catalog.silver.headcount       h ON h.org_code = 'SALES' AND h.period_key = pr.period_key
-LEFT JOIN prod_catalog.silver.orders          s ON s.channel_key = c.channel_key AND s.period_key = pr.period_key
-                                       AND s.is_first_order = true
+FROM silver.channel c
+JOIN silver.period pr ON pr.calendar_year >= 2025
+LEFT JOIN silver.marketing_spend m ON m.channel_key = c.channel_key AND m.period_key = pr.period_key
+LEFT JOIN silver.headcount       h ON h.org_code = 'SALES' AND h.period_key = pr.period_key
+LEFT JOIN silver.orders          s ON s.channel_key = c.channel_key AND s.period_key = pr.period_key
+                                   AND s.is_first_order = true
 GROUP BY c.channel_name, pr.calendar_year, pr.calendar_month;
 ```
 
@@ -268,22 +274,31 @@ GROUP BY c.channel_name, pr.calendar_year, pr.calendar_month;
 One Lakeflow SDP pipeline per domain. It owns Bronze through Gold for that scope.
 
 ```
-sales_pipeline
-  ├── bronze.orders        (Auto Loader, streaming)
-  ├── bronze.customer      (SCD2, AUTO CDC — history preserved at source layer)
-  ├── silver.orders        (cleaned, typed)
-  └── gold.sales_monthly   (materialized view)
+sales-medallion (pipeline)
+  ├── bronze.orders        (Auto Loader, streaming, append-only)
+  ├── bronze.customer      (raw CDC events, append-only)
+  ├── silver.orders        (cleaned, typed, EXPECT constraints)
+  ├── silver.customer      (SCD2 via AUTO CDC)
+  └── gold.sales_product_monthly   (materialized view)
 ```
 
-Unqualified table names in a pipeline resolve to that pipeline's configured default catalog and schema. Reading from a table owned by a different pipeline requires a fully qualified three-part name (`catalog.schema.table`). This is why cross-layer reads in the patterns above use `prod_catalog.bronze.*` and `prod_catalog.silver.*` — not `LIVE.*`, which is legacy syntax no longer required in new pipelines.
+Catalog and environment come from configuration, never from code:
 
-Cross-domain Gold joins run in a separate pipeline or Lakeflow Job after upstream Silver is complete.
+- Table references in pipeline code are two-part `schema.table` names (`bronze.orders`, `silver.customer`). They resolve to the pipeline's default catalog, which the bundle target sets (`dev_catalog`, `nonprod_catalog`, `prod_catalog`). A three-part name with a hardcoded catalog breaks promotion; treat it as a defect.
+- Environment-varying values (landing paths, lookback windows) are pipeline configuration parameters set per bundle target: `${param}` in SQL, `spark.conf.get("param")` in Python.
+- `LIVE.` and `APPLY CHANGES INTO` are legacy syntax. Do not use them in new code.
+
+Conformed dimensions (`silver.period`, `silver.entity`, `silver.product`, `silver.location`, `silver.channel`, `silver.org`) are built by one platform-owned pipeline, `conformed-dimensions`, not by domain pipelines. Domain pipelines read them like any other cross-pipeline table.
+
+Cross-domain Gold joins (like `gold.customer_acquisition_cost`) run in a separate pipeline or Lakeflow Job, scheduled after upstream Silver completes, run as its own service principal (see [Access model](../governance/access-model.md)).
 
 | Layer | Trigger | Pattern |
 |---|---|---|
-| Bronze | Continuous or triggered | Auto Loader, `read_files`, AUTO CDC |
-| Silver | After Bronze | Streaming MERGE or type-cast reads |
-| Gold | Scheduled or after Silver | Full refresh MV or incremental Delta |
+| Bronze | Continuous or triggered | Auto Loader, `read_files` |
+| Silver | Same pipeline, after Bronze | Streaming tables, AUTO CDC flows |
+| Gold | Scheduled or after Silver | Materialized view or incremental Delta |
+
+Writes outside the pipeline (ad hoc `saveAsTable`, manual MERGE) bypass expectations and the declared contract. Route all writes through the domain pipeline.
 
 ---
 ---
@@ -292,25 +307,27 @@ Cross-domain Gold joins run in a separate pipeline or Lakeflow Job after upstrea
 
 ### 🥉 Bronze
 - [ ] One table per source entity, append-only, schema evolution on
-- [ ] System columns present; `rescuedDataColumn` configured
-- [ ] SCD2 entities tracked here via AUTO CDC with `STORED AS SCD TYPE 2`
+- [ ] System columns present; `rescuedDataColumn => '_rescued_data'` configured
+- [ ] CDC feeds land as append-only event tables; no changes applied in Bronze
 - [ ] No prefixes in table or column names; intent lives in the COMMENT
-- [ ] UC managed under `<env>_catalog.bronze`; pipeline principal WRITE only
+- [ ] UC managed under `<env>_catalog.bronze`; grants per the access matrix
 
 ### 🥈 Silver
 - [ ] Types cast, nulls handled, deduplication applied
 - [ ] EXPECT constraints declared with DROP or FAIL behavior
-- [ ] Reads versioned entities from Bronze — does not reconstruct history
+- [ ] SCD2 entities derived here via `AUTO CDC ... STORED AS SCD TYPE 2`, rebuildable from Bronze events
 - [ ] Non-additive measures stored as components, not ratios
 - [ ] Semi-additive measures labeled in column COMMENT
+- [ ] Grain declared in every table COMMENT
 - [ ] UC managed under `<env>_catalog.silver`; lineage verifiable
 
 ### 🥇 Gold
 - [ ] Every object has owner + version in TBLPROPERTIES or catalog tags
-- [ ] Definitions reference Silver measures, not other Gold objects
+- [ ] Definitions reference Silver objects only; no Bronze reads
+- [ ] Business metrics defined as metric views ([Genie and metric views](genie-and-metric-views.md))
 - [ ] Non-additive outputs expose numerator and denominator separately
 - [ ] Cross-domain joins defined here once
-- [ ] All consuming services access Gold only; Silver/Bronze access revoked
+- [ ] All consuming services access Gold only
 - [ ] UC managed under `<env>_catalog.gold`; lineage verifiable
 
 ---
@@ -319,25 +336,26 @@ Cross-domain Gold joins run in a separate pipeline or Lakeflow Job after upstrea
 
 | Risk | Mitigation |
 |---|---|
-| Schema evolution off on Bronze | Enable `MERGE SCHEMA`; configure `rescuedDataColumn` |
+| Schema evolution off on Bronze | Enable schema evolution; configure `rescuedDataColumn` |
 | Writing Silver directly from source | Always route through Bronze |
-| SCD2 in Silver with streaming Bronze | Silver reconstructs history from ordering — fragile; move SCD2 to Bronze |
-| Semi-additive measures SUMmed across time | Label in column COMMENT; enforce in consuming layer |
-| Non-additive ratios stored in Silver | Store components; compute ratio at Gold |
-| Non-additive outputs re-aggregated across dimensions | Expose numerator and denominator separately; document the constraint |
-| Definitions living in consuming services | Single definition in Gold; revoke Silver/Bronze access |
-| Writes outside Lakeflow | Lineage gaps; route everything through UC managed tables |
+| Applying CDC changes in Bronze | Bronze loses append-only fidelity and the replay source; land events raw, apply in Silver |
+| Backfill through AUTO CDC | Replaying events out of order against an existing target corrupts version chains; full-refresh the SCD2 table so it rebuilds from Bronze |
+| Late or out-of-order CDC events | `SEQUENCE BY` orders them, but only within what has arrived; verify the sequence column is reliable end-to-end |
+| Semi-additive measures SUMmed across time | Label in column COMMENT; enforce in the metric view definition |
+| Non-additive ratios stored in Silver | Store components; compute ratio at Gold or in a metric view |
+| Non-additive outputs re-aggregated | Expose numerator and denominator; document the constraint |
+| Definitions living in consuming services | Single definition in Gold; revoke lower-layer access |
+| Hardcoded catalog in pipeline code | Two-part names plus bundle-target catalog; promotion redeploys the same code unchanged |
+| Writes outside the pipeline | Bypass expectations and the contract; route through the domain pipeline |
 
 ---
 
 ## Sources
 
-| | |
-|---|---|
-| Medallion lakehouse architecture | https://docs.databricks.com/aws/en/lakehouse/medallion |
-| Medallion architecture glossary | https://www.databricks.com/glossary/medallion-architecture |
-| Data warehousing architecture | https://docs.databricks.com/aws/en/sql/get-started/data-warehousing-concepts |
-| Lakehouse reference architectures | https://docs.databricks.com/aws/en/lakehouse-architecture/reference |
-| Lakeflow Spark Declarative Pipelines | https://docs.databricks.com/aws/en/ldp/ |
-| Unity Catalog | https://docs.databricks.com/aws/en/data-governance/unity-catalog/ |
-| Unity Catalog system tables | https://docs.databricks.com/aws/en/administration-guide/system-tables/ |
+- Azure Databricks: [Medallion lakehouse architecture](https://learn.microsoft.com/en-us/azure/databricks/lakehouse/medallion)
+- Azure Databricks: [Lakeflow Spark Declarative Pipelines](https://learn.microsoft.com/en-us/azure/databricks/ldp/)
+- Azure Databricks: [AUTO CDC and SCD Type 2](https://learn.microsoft.com/en-us/azure/databricks/ldp/cdc)
+- Azure Databricks: [Pipeline parameters](https://learn.microsoft.com/en-us/azure/databricks/ldp/parameters)
+- Azure Databricks: [Unity Catalog](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/)
+- Azure Databricks: [System tables](https://learn.microsoft.com/en-us/azure/databricks/admin/system-tables/)
+- Azure Databricks: [Metric views](https://learn.microsoft.com/en-us/azure/databricks/uc-semantics/metric-views/)

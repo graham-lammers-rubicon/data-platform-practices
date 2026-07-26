@@ -72,7 +72,7 @@ Snapshots are provisioned, never hand-loaded:
 
 ## Sources
 
-- Databricks: [Deployment modes](https://docs.databricks.com/aws/en/dev-tools/bundles/deployment-modes)
-- Databricks: [Limit catalog access to specific workspaces](https://docs.databricks.com/aws/en/catalogs/binding)
-- Databricks: [Clone a table](https://docs.databricks.com/aws/en/delta/clone)
+- Databricks: [Deployment modes](https://learn.microsoft.com/en-us/azure/databricks/dev-tools/bundles/deployment-modes)
+- Databricks: [Limit catalog access to specific workspaces](https://learn.microsoft.com/en-us/azure/databricks/catalogs/binding)
+- Databricks: [Clone a table](https://learn.microsoft.com/en-us/azure/databricks/delta/clone)
 - Azure Databricks: [Lakebase branches](https://learn.microsoft.com/en-us/azure/databricks/oltp/projects/branches)

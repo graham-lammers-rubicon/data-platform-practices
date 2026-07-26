@@ -208,7 +208,7 @@ Measures are the numeric facts at the intersection of dimensions and period. The
 | **Additive** | Can be summed across all dimensions | Revenue, quantity, headcount events | SUM |
 | **Semi-additive** | Can be summed across some dimensions but not period | Account balance, inventory on hand, headcount snapshot | SUM across entity, AVG across time |
 | **Non-additive** | Cannot be summed at all | Ratios, percentages, rates | Must be recomputed from components |
-| **Derived** | Computed from other measures | Margin = Revenue - COGS, Fill Rate = Shipped / Ordered | Compute at query time, never pre-store ratio |
+| **Derived** | Computed from other measures | Margin = Revenue - COGS, Fill Rate = Shipped / Ordered | Compute at query time. Never store a ratio in a Silver fact table; Gold may expose one at its declared grain with components alongside |
 
 **Rules:**
 
@@ -281,7 +281,7 @@ This metric requires a drill-across join. It is not computable from a single fac
 **Metric governance rules:**
 
 - One definition per metric name. If two teams define `revenue` differently, they must use different names.
-- Metrics reference measures, not other metrics, to avoid cascading definition failures.
+- Metrics reference measures, not other metrics, to avoid cascading definition failures. A composite formula written with metric names (LTV = ARPU × 1 / churn_rate) is shorthand: the governed definition expands each input to its component measures, so no metric depends on another metric's definition at query time.
 - Every metric carries its grain. A metric defined at monthly grain cannot be queried at daily grain without an explicit restatement of the definition.
 - Metric definitions are versioned. When a definition changes (fiscal calendar shift, inclusion rule change), prior periods must be recomputed or the version boundary documented.
 - Non-additive metrics must declare how they aggregate across dimensions. `Conversion rate` aggregated across channels is not the average of channel conversion rates — it is total conversions / total clicks across channels.
@@ -299,6 +299,8 @@ Presentation      →  BI tools, dashboards, notebooks query Gold metrics,
 ```
 
 > The Gold layer is where measures become metrics. It is not optional in a production system. Without it, every BI tool becomes its own semantic layer and definitions diverge.
+
+On this platform, metrics are implemented as Unity Catalog metric views: the definition (dimensions, measures, filters, comments) lives in YAML on a governed UC object, aggregation happens at query time via `MEASURE()`, and Genie and AI/BI dashboards consume the same definition. See [Genie and metric views](genie-and-metric-views.md).
 
 **Pivoting metrics:** Metrics that are additive or derived from additive components pivot cleanly. Rate and composite metrics do not pivot directly — they must be computed from their component measures at each pivot grain. Document this on every non-additive metric definition. Consumers will try to pivot them and get wrong numbers if they are not warned.
 
@@ -497,7 +499,7 @@ SELECT
   pr.calendar_month,
   SUM(m.spend_usd)                                      AS marketing_spend,
   SUM(s.order_count)                                    AS orders,
-  SAFE_DIVIDE(SUM(m.spend_usd), SUM(s.order_count))    AS cost_per_order
+  try_divide(SUM(m.spend_usd), SUM(s.order_count))     AS cost_per_order
 FROM channel c
 JOIN period pr ON pr.calendar_year = 2025
 LEFT JOIN marketing_spend m ON m.channel_key = c.channel_key AND m.period_key = pr.period_key
@@ -515,7 +517,7 @@ SELECT
   p.product_name,
   SUM(CASE WHEN pr.calendar_year = 2024 THEN f.revenue_usd END) AS revenue_2024,
   SUM(CASE WHEN pr.calendar_year = 2025 THEN f.revenue_usd END) AS revenue_2025,
-  SAFE_DIVIDE(
+  try_divide(
     SUM(CASE WHEN pr.calendar_year = 2025 THEN f.revenue_usd END) -
     SUM(CASE WHEN pr.calendar_year = 2024 THEN f.revenue_usd END),
     SUM(CASE WHEN pr.calendar_year = 2024 THEN f.revenue_usd END)
@@ -649,4 +651,4 @@ Before publishing any dataset to the analytical layer, verify:
 
 The framework is domain-agnostic. Sales, Finance, HR, Marketing, Operations, and Support can all publish fact tables into this contract and be queried, aggregated, compared, and forecasted with identical analytical patterns.
 
-> Grain is the design contract. Measures are what you store. Metrics are what you govern. The pivot test is the acceptance criterion. If it pivots, the structure is sound.
+> Grain is the design contract. Measures are what you store. Metrics are what you govern. The pivot test is the acceptance criterion: necessary, not sufficient. A dataset that fails it is broken; a dataset that passes it still needs the reconciliation checks in its spec (row counts, control totals) before it is trusted.

@@ -2,7 +2,7 @@
 
 Work on the data platform starts from a spec, not from code. A spec states what is being built, for whom, the contract it honors, and how everyone will know it works, before implementation begins. The spec is the source CI reads acceptance criteria from ([CI/CD](../platform/cicd-and-deployment.md)); a deploy without a validation step is incomplete.
 
-Scope: this standard governs data platform work, data products, pipelines, and platform changes. It does not prescribe development process for other systems.
+Scope: this standard governs data products, pipelines, and platform changes: work that ships a contract someone else consumes. It does not apply to documentation-only changes (including this repo), exploration in dev, or other systems. A doc change is reviewed as a PR; it does not need a spec about itself.
 
 Specs fit naturally into agent-assisted development, and teams moving toward agentic workflows can treat this as the on-ramp rather than an extra process. In that toolkit, prompts direct a working session, skills encode reusable how-to, and the spec is the durable artifact: it records what is being built and how it is judged, and it outlives the session that built it. An agent building against a spec follows it, cites it, and surfaces ambiguity instead of inventing intent. Adopt the spec first; the rest of the toolkit can follow at the team's pace.
 

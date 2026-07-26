@@ -11,13 +11,13 @@ Defines compute governance: which compute type each workload class uses, the pol
 
 ## Workload classes
 
-Serverless first. Classic compute exists only where a workload needs a capability serverless lacks, and always behind a policy.
+Serverless only. The standard workspaces are serverless type and cannot run classic compute ([Azure infrastructure](azure-infrastructure.md)). Classic compute exists only in a VNet-injected fallback workspace (for example on-prem ingestion), always behind a policy.
 
 | Workload | Compute | Governance |
 | --- | --- | --- |
 | Lakeflow SDP pipelines | Serverless | Serverless usage policy tags; continuous mode is prod-only ([Environments](environments.md)) |
-| Jobs | Serverless; classic via `jobs-standard` policy when required | Policy or usage policy |
-| Interactive notebooks | Serverless; classic via `interactive-standard` policy when required | Policy, aggressive auto-termination |
+| Jobs | Serverless; classic via `jobs-standard` policy, fallback workspace only | Policy or usage policy |
+| Interactive notebooks | Serverless | Usage policy |
 | SQL warehouses | Serverless, auto-stop | Sized per team: `<team>-<size>` ([Naming conventions](naming-conventions.md)) |
 | Vector search, model serving | Serverless endpoints | Serverless usage policy tags |
 

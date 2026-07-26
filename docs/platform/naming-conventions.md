@@ -46,14 +46,14 @@ All UC names: `snake_case`, ASCII `[a-z0-9_]`, starting with a letter. UC permit
 | Schema | medallion layer | `bronze`, `silver`, `gold` |
 | Bronze table | `<entity>` | `customer`, `order_line` |
 | Silver table | `<domain>` fact or entity | `sales`, `customer` |
-| Gold object | `<domain>_<grain>` | `sales_daily`, `customer_monthly` |
+| Gold object | `<domain>_<grain>` | `sales_daily`, `sales_product_monthly` |
 | Column | `<variable>` | `order_date`, `unit_price` |
 | Volume | `<purpose>` | `landing`, `checkpoints` |
 
 Rules:
 
 - No layer prefixes in table or column names (see [Medallion data practices](../practices/medallion-data-practices.md)). The schema tells you the layer; the COMMENT tells you what it is.
-- Bronze system columns keep their leading underscore: `_ingest_timestamp`, `_source_file`, `_pipeline_id`, `_is_quarantined`, `_raw_payload`.
+- Bronze system columns keep their leading underscore: `_ingest_timestamp`, `_source_file`, `_rescued_data`.
 - No abbreviations in column names except industry-standard (`id`, `qty`, `pct`).
 - Singular entity names (`customer`, not `customers`); the grain statement says what a row is.
 - Every UC object also requires a COMMENT: [Metadata and comments](metadata-and-comments.md).
@@ -65,6 +65,7 @@ Non-UC assets are referenced by path or ID, never as identifiers: `kebab-case`. 
 | Object | Pattern | Example |
 | --- | --- | --- |
 | Pipeline (Lakeflow SDP) | `<domain>-medallion` | `sales-medallion` |
+| Conformed dimension pipeline | `conformed-dimensions` | `conformed-dimensions` |
 | Cross-domain Gold job | `<subject>-gold` | `cac-gold` |
 | Job | `<domain>-<purpose>` | `sales-maintenance` |
 | Bundle (databricks.yml `name`) | matches repo | `sales-pipelines` |
@@ -119,9 +120,10 @@ Rules:
 | Object | Pattern | Example |
 | --- | --- | --- |
 | Pipeline service principal | `sp-<domain>-pipeline-<env>` | `sp-sales-pipeline-prod` |
+| Cross-domain Gold job service principal | `sp-<subject>-gold-<env>` | `sp-cac-gold-prod` |
 | Deployment service principal | `sp-dbx-deploy-<env>` | `sp-dbx-deploy-prod` |
 | App service principal | `sp-<app>-<env>` | `sp-salesapi-prod` |
-| Entra / UC group | `grp-<role>-<scope>-<env>` | `grp-analysts-gold-prod`, `grp-dataeng-dev` |
+| Entra / UC group | `grp-<role>-<scope>-<env>` | `grp-analysts-gold-prod`, `grp-dataeng-silver-dev` |
 
 Grants attach to groups, never users (see [Access model](../governance/access-model.md)). Group names encode role and scope so a grant audits from the name alone.
 
@@ -178,7 +180,7 @@ Azure stores tag keys as first written; two spellings of one key (`CostCenter`, 
 
 ## Sources
 
-- Databricks: [Names and identifiers](https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-names)
+- Databricks: [Names and identifiers](https://learn.microsoft.com/en-us/azure/databricks/sql/language-manual/sql-ref-names)
 - Databricks CLI source, bundle reference grammar: [libs/dyn/dynvar/ref.go](https://github.com/databricks/cli/blob/main/libs/dyn/dynvar/ref.go)
 - Python Language Reference: [Identifiers and keywords](https://docs.python.org/3/reference/lexical_analysis.html#identifiers)
 - Microsoft Learn: [Naming rules and restrictions for Azure resources](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules)

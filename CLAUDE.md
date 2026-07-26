@@ -17,14 +17,14 @@ docs/
     analytical-dataset-language.md
     bi-practices-guidance.md
     tidy-data.md
-  platform/                      Infrastructure reference: Azure + Databricks (all stubs)
-    azure-infrastructure.md
-    environments.md
-    cicd-and-deployment.md
-    compute-policies.md
-    naming-conventions.md
-    secrets-and-credentials.md
-    service-principal-auth.md
+  platform/                      Infrastructure reference: Azure + Databricks
+    azure-infrastructure.md      (stub)
+    environments.md              (stub)
+    cicd-and-deployment.md       (stub)
+    compute-policies.md          (stub)
+    naming-conventions.md        Case styles, name patterns, standard tokens
+    secrets-and-credentials.md   (stub)
+    service-principal-auth.md    (stub)
   governance/                    Access and usage policy
     access-model.md              Authoritative home of the access matrix
     responsible-use.md           (stub)

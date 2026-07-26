@@ -14,7 +14,7 @@ Defines what acceptable use of the platform's data and compute means, and how us
 - Data is used for the purpose its access was granted. A grant to build one product is not a license to browse the domain. Re-sharing data outside the granted role, by export, screenshot, or copy, is a violation, not a workaround.
 - Production data read from nonprod through the read-only binding is still production data. Handling obligations follow the data, not the workspace ([Environments](environments.md)).
 - Exports to spreadsheets or personal storage to "get the numbers" are a defect signal, instrumented and reviewed ([BI practices guidance](../practices/bi-practices-guidance.md)). The sanctioned path is certified Gold through governed tools.
-- Until a classification scheme is adopted, all Bronze and Silver data is treated as confidential: no examples, tickets, screenshots, or external tools. Gold objects are shareable only within their granted audience.
+- Bronze and Silver data stays inside the platform: no examples, tickets, screenshots, or external tools. Gold is shared only within its granted audience.
 - Real data never appears in docs, code comments, commit messages, or test fixtures. Test data is provisioned snapshots inside the platform ([Environments](environments.md)), never copies carried out of it.
 
 ## Compute use

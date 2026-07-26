@@ -40,9 +40,9 @@ Defines who can read and write each medallion layer, how access is requested, an
 
 Two request shapes exist. Both leave an auditable trail; neither is a chat message.
 
-**Joining an existing role** (the common case): request membership in the matching `grp-<role>-<scope>-<env>` Entra group through the group owner's approval process. Membership is managed in Entra only; AIM syncs it ([Identity provisioning](#identity-provisioning)). Owners: domain groups are owned by the data owner, platform groups by the platform team. Target turnaround: two business days.
+**Joining an existing role** (the common case): request membership in the matching `grp-<role>-<scope>-<env>` Entra group. Approval is the only human step: the group owner approves, provisioning is automatic from there (AIM syncs membership on the next authentication; see [Identity provisioning](#identity-provisioning)). Owners: domain groups by the data owner, platform groups by the platform team. Target: same business day; the latency is the owner's approval, nothing else.
 
-**A new access shape** (new group, new grant, or an exception like analyst Silver access): a PR to the infrastructure repo adding the group or grant in Terraform, linking the justification (the spec or decision it serves). Approvers: the data owner for the scope plus a platform engineer. Exceptions are time-boxed in the PR description with an expiry date. Target turnaround: five business days.
+**A new access shape** (new group, new grant, or an exception like analyst Silver access): a PR to the infrastructure repo adding the group or grant in Terraform, linking the justification (the spec or decision it serves). CI posts the plan on the PR; the data owner for the scope and a platform engineer approve; merge applies automatically. Exceptions are time-boxed in the PR with an expiry date. Target: next business day. If turnaround exceeds that, the fix is automation or approver coverage, not a longer target.
 
 Review and revocation:
 

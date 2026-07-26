@@ -1,10 +1,15 @@
 # BI Practices: Decision Systems, Not Reporting
 
-**Scope:** Design, implementation, and operation of business intelligence and analytics platforms.
+The standards that turn a reporting stack into a decision system. Priority order matters: the semantic meaning of business data comes first, then the decision workflow, then the infrastructure that serves both. Most BI guidance gets this backward and produces well-engineered platforms that inform without ever changing an outcome.
 
-**What this covers:** The standards that turn a reporting stack into a decision system. Priority order matters here: the semantic meaning of business data comes first, then the decision workflow, then the infrastructure that serves both. Most BI guidance gets this backward and produces well-engineered platforms that inform without ever changing an outcome.
+## What this covers
 
-**Normative language:** "Must" is a requirement. "Should" is a strong recommendation. "May" is an option.
+- Design, implementation, and operation of BI and analytics on this platform
+- Certification: informational vs. decision-grade outputs
+- The semantic layer: measures, metrics, definitions, versioning
+- Decision-first design, the trust chain, latency, history, self-service, executive controls
+
+"Must" is a requirement, "should" is a strong recommendation, "may" is an option.
 
 ---
 
@@ -287,4 +292,9 @@ A published output is decision-grade only if all of the following hold:
 - [ ] No manual spreadsheet step between platform and decision
 
 Anything that fails this checklist may still be published, labeled informational. It must not be certified.
+
+## Sources
+
+- Kimball Group: [Dimensional modeling techniques](https://www.kimballgroup.com/data-warehouse-business-intelligence-resources/kimball-techniques/dimensional-modeling-techniques/) (conformed dimensions, slowly changing dimensions)
+- Internal: [Analytical dataset language](analytical-dataset-language.md), [Medallion data practices](medallion-data-practices.md), [Access model](../governance/access-model.md), [Spec-driven development](spec-driven-development.md)
 

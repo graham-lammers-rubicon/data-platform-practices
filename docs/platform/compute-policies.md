@@ -1,25 +1,60 @@
 # Compute Policies
 
-> **Status: stub.** Scope is agreed; rules are not yet written. Not normative until this notice is removed.
+Defines compute governance: which compute type each workload class uses, the policies that enforce sizing and termination, and how every DBU traces to an owner. Compute policies require the Premium plan; this platform is on it.
 
-Defines compute governance for Databricks workloads: which compute types are allowed for which workload classes, sizing defaults, cost controls, and termination.
+## What this covers
 
-## Scope (planned)
+- Workload classes and their compute types
+- The policy set and what each policy fixes
+- Cost attribution: tags, serverless usage policies, budgets
+- Compliance enforcement when policies change
 
-- Workload classification: interactive, jobs, pipelines, SQL warehouses, serverless
-- Cluster sizing and SKU selection defaults per workload class
-- Mandatory auto-termination and idle timeouts
-- Cost attribution: required tags, budget alerts, monitoring via system tables
-- Databricks cluster policies that enforce the above
+## Workload classes
+
+Serverless first. Classic compute exists only where a workload needs a capability serverless lacks, and always behind a policy.
+
+| Workload | Compute | Governance |
+| --- | --- | --- |
+| Lakeflow SDP pipelines | Serverless | Serverless usage policy tags; continuous mode is prod-only ([Environments](environments.md)) |
+| Jobs | Serverless; classic via `jobs-standard` policy when required | Policy or usage policy |
+| Interactive notebooks | Serverless; classic via `interactive-standard` policy when required | Policy, aggressive auto-termination |
+| SQL warehouses | Serverless, auto-stop | Sized per team: `<team>-<size>` ([Naming conventions](naming-conventions.md)) |
+| Vector search, model serving | Serverless endpoints | Serverless usage policy tags |
 
 ## Rules
 
-To be written.
+- Every classic compute resource is created through a policy. No engineer holds the unrestricted-cluster-creation entitlement; the built-in Unrestricted policy is reachable only by workspace admins, and using it is a defect outside break-glass work.
+- Policies are Terraform-defined per the everything-as-code rule ([Environments](environments.md)), named by workload class (`jobs-standard`, `interactive-standard`). A policy edited in the UI is configuration drift.
+- Policies start from [Databricks policy families](https://learn.microsoft.com/en-us/azure/databricks/admin/clusters/policy-families) and fix, at minimum: auto-termination (interactive compute), a max DBUs-per-hour ceiling, an allowed node-type list, max compute resources per user, and the required tag set.
+- The baseline tags (`env`, `domain`, `owner`, `costCenter`, `managedBy`) are enforced in the policy's tag rules, not requested in a wiki. An untagged cluster should be impossible to create.
+- Serverless usage is attributed with [serverless usage policies](https://learn.microsoft.com/en-us/azure/databricks/admin/usage/budget-policies) (Public Preview): one per domain, carrying the same baseline tags, which propagate to `system.billing.usage.custom_tags` and Azure cost analysis. Assign each engineer exactly one policy so it applies automatically.
+- Cost review is standing, not reactive: budgets with alerts in the account console, and `system.billing.usage` queries by tag. Spend that cannot be attributed to a domain is a defect in the policy set, not a finance problem.
+- After any policy change, run compliance enforcement on the governed compute. Policy edits do not propagate to existing resources on their own.
+- Library standardization uses policy-attached libraries, not init scripts; Databricks [recommends compute policies over init scripts](https://learn.microsoft.com/en-us/azure/databricks/admin/clusters/policies) for library installs.
+- Nonprod compute follows the trigger rules in [Environments](environments.md): manual or CI trigger, no standing schedules without a stated reason.
 
 ## Sharp edges
 
-To be written.
+- Editing a policy changes nothing that already exists: "compute resources created using that policy aren't automatically updated." Enforce compliance after every policy change or the fleet drifts from the policy silently.
+- Deleting a policy leaves its compute running but uneditable except by unrestricted-creation holders, which nobody has. Migrate compute to a replacement policy before deleting.
+- Lowering max-resources-per-user does not terminate existing resources over the limit; they run until manually stopped.
+- Serverless usage policies do not cover classic compute, do not auto-attach to existing assets, and a job-triggered pipeline does not inherit the job's policy. Each of those gaps is untagged spend until closed by hand.
+- A user assigned multiple serverless usage policies gets the alphabetically first one by default; the tag data then lies about ownership. One policy per engineer.
+- Policy-attached libraries remove user-installed compute-scoped libraries on the next restart. Intended, but it surprises anyone who installed from the UI.
 
 ## Checklist
 
-To be written.
+- [ ] Every classic compute resource was created through a Terraform-defined policy
+- [ ] No non-admin identity has unrestricted cluster creation
+- [ ] Policies fix auto-termination, DBU ceiling, node types, max resources per user, and required tags
+- [ ] Every engineer has exactly one serverless usage policy; every domain's serverless spend is tagged
+- [ ] `system.billing.usage` shows zero unattributable spend
+- [ ] Budgets with alerts exist per domain and per tier
+- [ ] Compliance enforcement ran after the last policy change
+
+## Sources
+
+- Azure Databricks: [Create and manage compute policies](https://learn.microsoft.com/en-us/azure/databricks/admin/clusters/policies)
+- Azure Databricks: [Default policies and policy families](https://learn.microsoft.com/en-us/azure/databricks/admin/clusters/policy-families)
+- Azure Databricks: [Serverless usage policies](https://learn.microsoft.com/en-us/azure/databricks/admin/usage/budget-policies)
+- Azure Databricks: [Create and monitor budgets](https://learn.microsoft.com/en-us/azure/databricks/admin/account-settings/budgets)

@@ -22,7 +22,7 @@ Watch item, not normative: Unity Catalog secrets (`catalog.schema.secret`, gover
 ## Rules
 
 - Every stored secret lives in Azure Key Vault and is surfaced to Databricks through a Key Vault-backed secret scope. `databricks secrets list-scopes` showing a scope without a Key Vault DNS name is a defect.
-- One vault per scope, 1:1. Scope ACLs are scope-level, and a scope grants access to every secret in its backing vault; the vault is therefore the access boundary. Scope `<domain>-<env>` is backed by vault `kv-<domain>-<env>-wus-001` ([Naming conventions](naming-conventions.md)).
+- One vault per scope, 1:1. Scope ACLs are scope-level, and a scope grants access to every secret in its backing vault; the vault is therefore the access boundary. Scope `<domain>-<env>` is backed by vault `kv-<domain>-<env>-[region]-001` ([Naming conventions](naming-conventions.md)).
 - Vaults backing scopes use the **Vault access policy** permission model. Per the [Databricks secrets doc](https://learn.microsoft.com/en-us/azure/databricks/security/secrets/), "Azure role-based access control (RBAC) is not supported" for Key Vault-backed scopes.
 - Vaults, scopes, and scope ACLs are Terraform-created, per the everything-as-code rule ([Environments](environments.md)). Scope ACLs grant READ to the consuming pipeline SP or group only; MANAGE stays with the platform team.
 - Secret writes go through Azure (portal, API, or Terraform), never through Databricks; the scope is read-only. Rotation happens in Key Vault and is invisible to consuming code.
@@ -43,7 +43,7 @@ Watch item, not normative: Unity Catalog secrets (`catalog.schema.secret`, gover
 - Workspace admins, scope creators, and granted users can read secret contents; [Databricks states](https://learn.microsoft.com/en-us/azure/databricks/security/secrets/) it "is not possible to fully prevent these users from viewing secret contents." Grant accordingly.
 - Creating a Key Vault-backed scope requires Key Vault Contributor, Contributor, or Owner on the vault, even when Databricks already has data-plane access.
 - Scope creation grants Get/List on the vault to the Azure Databricks first-party application via access policy. The vault firewall needs the trusted-Microsoft-services bypass when locked down.
-- The 24-character Key Vault name budget breaks for long domain tokens (`kv-marketing-nonprod-wus-001` is 28). Check the budget per name; abbreviate the environment to `np` only where forced, and register any shortened domain token in the naming conventions before first use.
+- The 24-character Key Vault name budget breaks for long domain tokens (with a three-character region token, `kv-marketing-nonprod-[region]-001` resolves to 28). Check the budget per name; abbreviate the environment to `np` only where forced, and register any shortened domain token in the naming conventions before first use.
 - `terraform output -json` and `-raw` print values marked `sensitive` in plain text.
 - Push protection is off by default and, for private repos, requires the GitHub Secret Protection license on Team or Enterprise. An unlicensed private repo has no push-time guard; the rule still holds, enforcement is just weaker.
 - GitHub-hosted runners run on GitHub's infrastructure, outside the platform VNet. A vault locked to private endpoints is unreachable from them; the runtime-fetch pattern needs the vault firewall to admit the runner, or self-hosted runners in the VNet. Verify reachability before making a workflow depend on it.

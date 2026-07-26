@@ -15,8 +15,8 @@ Two workspace tiers. Environments are catalogs and bundle targets, not workspace
 
 | Tier | Workspace | Environments (catalogs) |
 | --- | --- | --- |
-| Prod | `dbw-dplat-prod-wus-001` | `prod_catalog` |
-| Nonprod | `dbw-dplat-np-wus-001` | `dev_catalog`, `nonprod_catalog` |
+| Prod | `dbw-dbx-prod-[region]-001` | `prod_catalog` |
+| Nonprod | `dbw-dbx-np-[region]-001` | `dev_catalog`, `nonprod_catalog` |
 
 All catalogs share the regional Unity Catalog metastore. Workspace-catalog bindings enforce the tier boundary (below). Tokens: [Naming conventions](naming-conventions.md).
 
@@ -58,7 +58,7 @@ Snapshots are provisioned, never hand-loaded:
 - Development-mode prefixes (`[dev <user>]`) intentionally break naming conventions in dev. Never hardcode resource names downstream of a dev deploy.
 - A `nonprod` target left on `mode: development` gets user-prefixed names and paused-forever triggers: promotion tests pass in a shape prod never has.
 - Deep clones duplicate storage and drift immediately; a paused schedule still costs compute every triggered run.
-- [Lakebase on Azure is Beta](https://learn.microsoft.com/en-us/azure/databricks/oltp/projects/branches) (westus available). Validate before making branches load-bearing in the test strategy.
+- [Lakebase on Azure is Beta](https://learn.microsoft.com/en-us/azure/databricks/oltp/projects/branches) with limited region availability. Validate support in the deployment region before making branches load-bearing in the test strategy.
 
 ## Checklist
 

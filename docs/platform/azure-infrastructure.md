@@ -11,19 +11,19 @@ Defines the Azure footprint the platform runs on: what exists, how it is laid ou
 
 ## Layout
 
-Two tiers, one region (`wus`), one resource group per tier plus the Databricks-managed groups Azure creates.
+Two tiers, one region, one resource group per tier plus the Databricks-managed groups Azure creates. `[region]` is a placeholder throughout; the real region token is set in Terraform ([Naming conventions](naming-conventions.md)).
 
 | Resource | Nonprod | Prod |
 | --- | --- | --- |
-| Resource group | `rg-dplat-np-wus-001` | `rg-dplat-prod-wus-001` |
-| Databricks workspace | `dbw-dplat-np-wus-001` | `dbw-dplat-prod-wus-001` |
-| Virtual network | `vnet-dplat-np-wus-001` | `vnet-dplat-prod-wus-001` |
-| Storage (ADLS Gen2) | `stdplatnpwus001` | `stdplatprodwus001` |
-| Access connector | `dbac-dplat-np-wus-001` | `dbac-dplat-prod-wus-001` |
-| Platform key vault | `kv-dplat-np-wus-001` | `kv-dplat-prod-wus-001` |
-| Log Analytics | `log-dplat-np-wus-001` | `log-dplat-prod-wus-001` |
+| Resource group | `rg-dbx-np-[region]-001` | `rg-dbx-prod-[region]-001` |
+| Databricks workspace | `dbw-dbx-np-[region]-001` | `dbw-dbx-prod-[region]-001` |
+| Virtual network | `vnet-dbx-np-[region]-001` | `vnet-dbx-prod-[region]-001` |
+| Storage (ADLS Gen2) | `stdbxnp[region]001` | `stdbxprod[region]001` |
+| Access connector | `dbac-dbx-np-[region]-001` | `dbac-dbx-prod-[region]-001` |
+| Platform key vault | `kv-dbx-np-[region]-001` | `kv-dbx-prod-[region]-001` |
+| Log Analytics | `log-dbx-np-[region]-001` | `log-dbx-prod-[region]-001` |
 
-Domain secret vaults (`kv-<domain>-<env>-wus-001`) are created per secret scope as domains onboard ([Secrets and credentials](secrets-and-credentials.md)).
+Domain secret vaults (`kv-<domain>-<env>-[region]-001`) are created per secret scope as domains onboard ([Secrets and credentials](secrets-and-credentials.md)).
 
 ## Workspace provisioning
 
@@ -35,7 +35,7 @@ Domain secret vaults (`kv-<domain>-<env>-wus-001`) are created per secret scope 
 
 ## Unity Catalog wiring
 
-- One metastore per region is a platform limit, not a choice: ["You can create only one metastore per region"](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-metastore). Both workspaces attach to the `wus` metastore. Terraform manages it (`databricks_metastore`, `databricks_metastore_assignment`).
+- One metastore per region is a platform limit, not a choice: ["You can create only one metastore per region"](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-metastore). Both workspaces attach to the single regional metastore. Terraform manages it (`databricks_metastore`, `databricks_metastore_assignment`).
 - No metastore-level root storage. Managed storage is declared per catalog, pointing at the tier storage account (`uc-managed` container), so tier isolation holds at the storage layer too.
 - Storage access is via the tier access connector's managed identity, registered as a UC storage credential. Databricks [strongly recommends managed identities](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-metastore) over service principals for storage access: no credential to rotate, works behind a storage firewall.
 - The metastore admin role is held by a platform team group, not an individual, per the [Databricks recommendation](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-metastore).
@@ -62,7 +62,7 @@ Domain secret vaults (`kv-<domain>-<env>-wus-001`) are created per secret scope 
 - [ ] Every resource exists in Terraform state with baseline tags; portal diff is zero
 - [ ] Workspaces are VNet-injected with secure cluster connectivity and NAT gateway egress
 - [ ] Subnets are `/26` or larger, delegated, one workspace pair per subnet set
-- [ ] Both workspaces attach to the single `wus` metastore; managed storage is per catalog
+- [ ] Both workspaces attach to the single regional metastore; managed storage is per catalog
 - [ ] Storage credentials use the tier access connector managed identity; zero SP-based storage access
 - [ ] Metastore admin is a group
 - [ ] Terraform state is remote, encrypted, and not in git

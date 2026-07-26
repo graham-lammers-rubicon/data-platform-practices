@@ -22,9 +22,9 @@ The [Databricks recommendation](https://learn.microsoft.com/en-us/azure/databric
 
 | Identity | Type | Auth | Purpose |
 | --- | --- | --- | --- |
-| `sp-dplat-deploy-np`, `sp-dplat-deploy-prod` | Databricks-managed | GitHub OIDC via Databricks federation policy | Bundle deploys ([CI/CD](cicd-and-deployment.md)) |
+| `sp-dbx-deploy-np`, `sp-dbx-deploy-prod` | Databricks-managed | GitHub OIDC via Databricks federation policy | Bundle deploys ([CI/CD](cicd-and-deployment.md)) |
 | `sp-<domain>-pipeline-<env>` | Databricks-managed | None held; runs as `run_as` in the bundle | Pipeline and job execution |
-| `id-dplat-deploy-<tier>-001` | Entra user-assigned managed identity | GitHub OIDC via Entra federated credential | Terraform: ARM plus Databricks account provisioning |
+| `id-dbx-deploy-<tier>-001` | Entra user-assigned managed identity | GitHub OIDC via Entra federated credential | Terraform: ARM plus Databricks account provisioning |
 | `sp-<app>-<env>` | Databricks-managed | OAuth M2M | Apps and external callers reading Gold |
 
 Name patterns: [Naming conventions](naming-conventions.md).

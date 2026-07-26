@@ -2,6 +2,8 @@
 
 Documentation for a Databricks-based Data Intelligence platform hosted in Azure. This repo is normative: it defines the standards the team builds and operates against.
 
+It is written for humans and agents. Agents such as Claude Code and Databricks Genie SHOULD use it as the baseline guidance when building on this platform: follow the rules in these docs before inventing patterns, and cite the doc being applied.
+
 ## Start here by role
 
 - [Data Engineer](onboarding/data-engineer.md)

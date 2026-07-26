@@ -14,23 +14,23 @@ docs/
     bi-analyst.md
     platform-engineer.md
   practices/                     Design and delivery standards (reference docs for the rules below)
-    spec-driven-development.md   (stub)
+    spec-driven-development.md   Spec contents, workflow, acceptance in CI
     medallion-data-practices.md
     analytical-dataset-language.md
     bi-practices-guidance.md
     tidy-data.md
   platform/                      Infrastructure reference: Azure + Databricks
-    azure-infrastructure.md      (stub)
+    azure-infrastructure.md      Resource layout, VNet injection, UC wiring, Terraform
     environments.md              Two tiers (prod/np), env-per-catalog, DAB-only promotion
     cicd-and-deployment.md       GitHub Actions, promotion gates, OIDC identity
-    compute-policies.md          (stub)
+    compute-policies.md          Workload classes, policy set, cost attribution
     naming-conventions.md        Case styles, name patterns, standard tokens
     metadata-and-comments.md     UC COMMENTs, commit messages, docstrings
     secrets-and-credentials.md   Storage hierarchy, KV-backed scopes, repo hygiene
     service-principal-auth.md    SP types, standard identities, auth ranking, lifecycle
   governance/                    Access and usage policy
     access-model.md              Authoritative home of the access matrix
-    responsible-use.md           (stub)
+    responsible-use.md           Data handling, compute accountability, GenAI rules
 ```
 
 Docs marked stub carry a `> **Status: stub.**` notice: scope is agreed, rules are unwritten, not normative. When writing a stub's content, remove the notice.

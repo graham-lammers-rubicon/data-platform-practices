@@ -25,4 +25,4 @@ You own the Azure and Databricks infrastructure the platform runs on: provisioni
 - Least privilege by default; grants on groups, never individual users.
 - No secrets in code or docs. Key Vault-backed scopes and service principals only.
 - Cost is governed: right-sized SKUs, auto-termination, tagging for attribution.
-- Most platform docs are stubs today. When you establish a standard, write it into the stub and remove the stub notice; the doc is the deliverable, not a wiki page elsewhere.
+- The platform docs are normative. When you establish a new standard, write it into the owning doc in the same change; the doc is the deliverable, not a wiki page elsewhere.

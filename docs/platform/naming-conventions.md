@@ -14,16 +14,17 @@ Five standard case styles exist in software. On this platform each has exactly o
 
 | Style | Example | Where it applies here |
 | --- | --- | --- |
-| `snake_case` | `order_line_id` | All Unity Catalog objects: catalogs, schemas, tables, views, columns. Job and pipeline names. Python modules and variables. SQL identifiers. YAML and Terraform keys. |
-| `kebab-case` | `data-platform-practices` | Azure resource names (where allowed), repos, bundle names, secret scopes and secret keys, CLI flags. |
+| `snake_case` | `order_line_id` | All Unity Catalog objects: catalogs, schemas, tables, views, columns. Python modules, packages, and variables. SQL identifiers. YAML and Terraform keys. |
+| `kebab-case` | `data-platform-practices` | Everything Databricks that is not a UC object or a Python module: notebooks, folders, jobs, pipelines, bundles and resource keys, warehouses. Azure resource names (where allowed), repos, secret scopes and secret keys, CLI flags. |
 | `SCREAMING_SNAKE_CASE` | `MAX_RETRY_COUNT` | Environment variables and code constants only. Never in data object names. |
 | `camelCase` | `costCenter` | Tag keys and JSON payload fields only. |
 | `PascalCase` | `OrderIngestionService` | Class names in application code only. Never in platform resource names. |
 
-The split is not stylistic. It falls out of two hard constraints:
+The split is not stylistic. It falls out of three hard constraints:
 
 1. Unity Catalog stores object names as lowercase, and names containing hyphens require backtick quoting in every SQL statement. So UC objects get `snake_case`: casing would be silently destroyed, and hyphens would tax every query forever.
-2. Key Vault secret names allow alphanumerics and hyphens only; underscores are invalid. Storage account names allow lowercase letters and numbers only. So the Azure side gets `kebab-case`, degrading to bare concatenation where hyphens are also forbidden.
+2. Python's import grammar rejects hyphens: `import my-module` is a syntax error because `-` parses as minus. So anything imported as a Python module gets `snake_case`. Everything else in the workspace is referenced by path, where hyphens are inert, so readability wins and those names get `kebab-case`.
+3. Key Vault secret names allow alphanumerics and hyphens only; underscores are invalid. Storage account names allow lowercase letters and numbers only. So the Azure side gets `kebab-case`, degrading to bare concatenation where hyphens are also forbidden.
 
 ## Unity Catalog objects
 
@@ -48,17 +49,25 @@ Rules:
 
 ## Databricks workspace objects
 
+Non-UC workspace assets are referenced by path or by ID, never as SQL or Python identifiers, so they use `kebab-case`. Verified constraints: bundle interpolation syntax accepts hyphens in resource keys mid-segment (`${resources.jobs.my-job.id}` is valid per the CLI's reference grammar), and job, pipeline, notebook, and warehouse names have no character restriction that excludes hyphens.
+
 | Object | Pattern | Example |
 | --- | --- | --- |
-| Pipeline (Lakeflow SDP) | `<domain>_medallion` | `sales_medallion` |
-| Cross-domain Gold job | `<subject>_gold` | `cac_gold` |
-| Job | `<domain>_<purpose>` | `sales_maintenance` |
-| Bundle (databricks.yml `name`) | `kebab-case`, matches repo | `sales-pipelines` |
-| SQL warehouse | `<team>_<size>` | `analytics_small` |
-| Cluster policy | `<workload_class>` | `jobs_standard` |
+| Pipeline (Lakeflow SDP) | `<domain>-medallion` | `sales-medallion` |
+| Cross-domain Gold job | `<subject>-gold` | `cac-gold` |
+| Job | `<domain>-<purpose>` | `sales-maintenance` |
+| Bundle (databricks.yml `name`) | matches repo | `sales-pipelines` |
+| Bundle resource key | matches the resource name | `sales-maintenance` |
+| Notebook (entry point, orchestration, exploration) | `<purpose>` | `daily-load-orchestrator` |
+| Notebook or `.py` file imported as a module | `snake_case` (forced) | `date_utils.py` |
+| SQL warehouse | `<team>-<size>` | `analytics-small` |
+| Cluster policy | `<workload-class>` | `jobs-standard` |
 
 Rules:
 
+- The `snake_case` carve-out is not optional: a notebook or file consumed via `import` must be a valid Python identifier. If a notebook might ever graduate from entry point to imported library, name it `snake_case` up front; renaming later breaks every job path that references it.
+- A file that defines one UC table is named after the table, so it is `snake_case` by inheritance: `sales_daily.sql` defines `gold.sales_daily`.
+- Python wheels: the distribution name may be kebab (`sales-pipelines`), the import package inside it must be snake (`sales_pipelines`). These are two names for one artifact; keep them in lockstep.
 - Environment never appears in job, pipeline, or warehouse names. Environment is expressed by the bundle target and the catalog it deploys into. Embedding `dev` in a name forces a rename at every promotion, which breaks references; deriving it from the target does not.
 - Jobs and pipelines are deployed from bundles, so their names live in source control. A name not in a bundle is a name that will drift.
 
@@ -130,6 +139,7 @@ Azure tag names are case-insensitive for operations but stored as first written;
 - Unity Catalog lowercases object names. `SalesDaily` and `sales_daily` are not two naming options; the first silently becomes `salesdaily`. Any casing scheme other than `snake_case` is destroyed on write.
 - A hyphen in a UC name compiles: `` `sales-daily` `` works with backticks. It then requires backticks in every query, notebook, and tool that touches it, forever, and some tools quote incorrectly. Treat a hyphenated UC name as a defect even though the platform accepts it.
 - Column names with spaces or other special characters require Delta column mapping and break downstream tools. Stay in `[a-z0-9_]`.
+- A kebab-named notebook works perfectly until someone tries to `import` it; then it fails as a syntax error, and the fix is a rename that breaks every job referencing the old path. Decide import-vs-entry-point at creation time, not later.
 - Storage account and key vault names are globally unique across all of Azure. A name that passes review can still fail at deploy time; check availability in the infrastructure pipeline, not manually.
 - The 24-character storage account budget is consumed by tokens. Adding a fourth token or lengthening `dataplat` breaks the scheme silently in the one resource type that cannot take hyphens.
 - Environment embedded in a job or pipeline name means promotion renames it, and renames orphan run history and break references. Keep environment in the bundle target.
@@ -149,5 +159,7 @@ Azure tag names are case-insensitive for operations but stored as first written;
 ## Sources
 
 - Databricks: [Names and identifiers](https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-names)
+- Databricks CLI source, bundle reference grammar: [libs/dyn/dynvar/ref.go](https://github.com/databricks/cli/blob/main/libs/dyn/dynvar/ref.go)
+- Python Language Reference: [Identifiers and keywords](https://docs.python.org/3/reference/lexical_analysis.html#identifiers)
 - Microsoft Learn: [Naming rules and restrictions for Azure resources](https://learn.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules)
 - Microsoft Learn (Cloud Adoption Framework): [Abbreviation recommendations for Azure resources](https://learn.microsoft.com/en-us/azure/cloud-adoption-framework/ready/azure-best-practices/resource-abbreviations)

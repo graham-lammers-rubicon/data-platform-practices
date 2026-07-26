@@ -58,7 +58,7 @@ Snapshots are provisioned, never hand-loaded:
 - Development-mode prefixes (`[dev <user>]`) intentionally break naming conventions in dev. Never hardcode resource names downstream of a dev deploy.
 - A `nonprod` target left on `mode: development` gets user-prefixed names and paused-forever triggers: promotion tests pass in a shape prod never has.
 - Deep clones duplicate storage and drift immediately; a paused schedule still costs compute every triggered run.
-- Lakebase on Azure is Beta (westus available). Validate before making branches load-bearing in the test strategy.
+- [Lakebase on Azure is Beta](https://learn.microsoft.com/en-us/azure/databricks/oltp/projects/branches) (westus available). Validate before making branches load-bearing in the test strategy.
 
 ## Checklist
 

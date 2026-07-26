@@ -60,7 +60,7 @@ Rules:
 
 ## Databricks workspace objects
 
-Non-UC assets are referenced by path or ID, never as identifiers: `kebab-case`. Verified: bundle interpolation accepts hyphens in resource keys (`${resources.jobs.my-job.id}` is valid per the CLI reference grammar); job, pipeline, notebook, and warehouse names have no restriction excluding hyphens.
+Non-UC assets are referenced by path or ID, never as identifiers: `kebab-case`. Verified: bundle interpolation accepts hyphens in resource keys (`${resources.jobs.my-job.id}` is valid per the [CLI reference grammar](https://github.com/databricks/cli/blob/main/libs/dyn/dynvar/ref.go)); job, pipeline, notebook, and warehouse names have no restriction excluding hyphens.
 
 | Object | Pattern | Example |
 | --- | --- | --- |

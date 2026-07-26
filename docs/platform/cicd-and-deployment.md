@@ -50,7 +50,7 @@ Rules:
 - A federation policy scoped to the org instead of a full subject claim lets any workflow in the org mint tokens as the deploy SP. Scope every policy to the narrowest subject claim.
 - Token-based auth (`SP_TOKEN` secret) works and is documented; here it is a defect. OIDC only.
 - `bundle deploy` is not atomic across resources. A failed mid-deploy leaves mixed state; the fix is rerunning the deploy, never hand-editing the workspace.
-- A killed production deploy can leave the deployment lock held; recover with `bundle deploy --force-lock` (documented for exactly this stale-lock case), never by manual cleanup.
+- A killed production deploy can leave the deployment lock held; recover with `bundle deploy --force-lock`, [documented](https://docs.databricks.com/aws/en/dev-tools/cli/bundle-commands) for use "only if the previous deployment crashed or was interrupted and left a stale lock file," never by manual cleanup.
 - `bundle validate` catches config errors, not logic errors. A green validate proves the YAML parses and resolves against the schema, nothing more; tests and smoke runs carry the rest.
 - Approval fatigue: there is one human gate (`prod`). Keep it that way. The `nonprod` stage proves the SHA with automated checks; adding reviewers to it buys rubber stamps, not safety.
 

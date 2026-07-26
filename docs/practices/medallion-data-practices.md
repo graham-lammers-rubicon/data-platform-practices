@@ -45,7 +45,7 @@ Recommended structure:
 
 Raw. Append-only. Schema-on-read. One table per source entity. No joins, no casting, no renaming, no business logic. Full stop.
 
-Sources land here in whatever form they arrive — batch files, streaming events, or CDC feeds from operational systems. Databricks recommends storing fields as `STRING`, `VARIANT`, or binary to survive unexpected schema changes. Add system columns on ingest. Always configure `rescuedDataColumn` — skip it and unknown fields vanish silently, and you'll find out six months later.
+Sources land here in whatever form they arrive — batch files, streaming events, or CDC feeds from operational systems. Databricks [recommends storing most fields](https://docs.databricks.com/aws/en/lakehouse/medallion) as `STRING`, `VARIANT`, or binary to survive unexpected schema changes. Add system columns on ingest. Always configure `rescuedDataColumn` — skip it and unknown fields vanish silently, and you'll find out six months later.
 
 **System columns:**
 ```sql

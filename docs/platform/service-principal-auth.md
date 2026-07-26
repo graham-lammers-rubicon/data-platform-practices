@@ -16,7 +16,7 @@ Azure Databricks has two kinds of service principal:
 - **Databricks-managed**: created and managed inside Databricks. Authenticates with Databricks OAuth, including workload identity federation.
 - **Microsoft Entra ID managed**: an Entra app registration linked into Databricks by its application (client) ID. Authenticates with Databricks OAuth or Entra tokens.
 
-The Databricks recommendation, adopted here as a rule: use Databricks-managed service principals for Databricks automation; use Entra-managed service principals only where one identity must authenticate to Databricks and other Azure resources at the same time.
+The [Databricks recommendation](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/service-principals), adopted here as a rule: use Databricks-managed service principals for Databricks automation; use Entra-managed service principals only "in cases where you must authenticate with Azure Databricks and other Azure resources at the same time."
 
 ## Standard identities
 
@@ -38,7 +38,7 @@ Name patterns: [Naming conventions](naming-conventions.md).
 - Auth methods, ranked. Use the highest that works:
   1. Workload identity federation (Databricks federation policy or Entra federated credential). No stored credential.
   2. OAuth M2M client secret, stored in a Key Vault-backed secret scope with a rotation owner ([Secrets and credentials](secrets-and-credentials.md)).
-  3. Personal access tokens: banned. Databricks documents PATs as legacy, for use only where OAuth is unsupported; no such case exists on this platform.
+  3. Personal access tokens: banned. [Databricks documents PATs as legacy](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/manage-service-principals), for use "only when OAuth is not supported"; no such case exists on this platform.
 - Databricks federation policies attach only to Databricks-managed SPs. Policy scoping rules: [CI/CD](cicd-and-deployment.md).
 - Entra auth types (`azure-cli`, managed identity) are used only by the Terraform identity. Workload SPs authenticate with Databricks OAuth.
 - Deactivate before delete. Deactivation blocks authentication and is reversible; deletion fails jobs, stops compute owned by the SP, and breaks Run-as-Owner dashboards until ownership is reassigned.
@@ -46,7 +46,7 @@ Name patterns: [Naming conventions](naming-conventions.md).
 
 ## Sharp edges
 
-- Deactivating an SP does not revoke its existing tokens; Databricks recommends revoking tokens explicitly. The PAT ban is what makes deactivation airtight here.
+- Deactivating an SP blocks authentication but does not revoke tokens: per the [Databricks docs](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/manage-service-principals), "the tokens remain but cannot be used to authenticate while a service principal is deactivated," and they work again on reactivation. Revoke on offboarding; the PAT ban is what makes deactivation airtight here.
 - With the `RestrictWorkspaceAdmins` setting at `ALLOW ALL`, workspace admins can mint tokens on behalf of any SP in their workspace. Restrict the setting in every workspace.
 - A Databricks federation policy on an Entra-managed SP is undocumented behavior. Do not design around it; deploy SPs stay Databricks-managed.
 - Entra SPs synced by automatic identity management provision on first use. A synced SP is invisible to grants and APIs until it first authenticates; grant against it only after provisioning.

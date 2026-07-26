@@ -30,8 +30,8 @@ Defines who can read and write each medallion layer, how access is requested, an
 
 ## Identity provisioning
 
-- Automatic identity management (AIM) is the provisioning mechanism. Microsoft Entra ID is the source of record for users and groups; AIM is enabled by default for accounts created after 2025-08-01.
-- The Entra SCIM provisioning connector is not used. Running SCIM and AIM in parallel creates duplicate identities and permission conflicts; never stand SCIM up.
+- Automatic identity management (AIM) is the provisioning mechanism. Microsoft Entra ID is the source of record for users and groups; [AIM is enabled by default](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/automatic-identity-management/) for accounts created after 2025-08-01, and Databricks recommends it over SCIM.
+- The Entra SCIM provisioning connector is not used. Databricks [warns that mixing provisioning methods](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/automatic-identity-management/) "causes duplicate entries and permission conflicts"; never stand SCIM up.
 - Grants attach to Entra-synced groups (`grp-<role>-<scope>-<env>`, see [Naming conventions](../platform/naming-conventions.md)). Membership is managed in Entra, never edited in Databricks.
 - Service principals are not provisioned by AIM sync alone: Databricks-managed SPs are created by Terraform ([Service principal authentication](../platform/service-principal-auth.md)); Entra SPs provision on first authentication.
 - Nested group members inherit permissions, but principals not explicitly provisioned to the account are invisible to Terraform and the APIs. Anything referenced in code is explicitly provisioned.
@@ -51,7 +51,7 @@ To be written:
 - Granting an analyst Silver access "temporarily" for one report creates a permanent dependency. If a consumer needs a Silver measure, the fix is a Gold object, not a grant.
 - Grants to individual users survive team changes silently. Group-based grants are the only auditable pattern.
 - Renaming a group in Entra does not sync proactively; the name updates only when an admin opens the group detail page. Treat group names as immutable once a grant exists.
-- Deleting a user in Entra deactivates them in Databricks but does not revoke their personal access tokens. Token revocation is an explicit offboarding step.
+- Deleting a user in Entra deactivates them in Databricks but does not revoke their personal access tokens; [Databricks recommends revoking tokens](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/automatic-identity-management/) for deactivated identities. Token revocation is an explicit offboarding step.
 - AIM does not support cross-tenant Entra directories. External collaborators need a different path; do not assume B2B guests sync.
 
 ## Checklist

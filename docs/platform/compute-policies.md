@@ -23,7 +23,7 @@ Conduct obligations (purpose-bound compute, tagging workarounds, self-reporting)
 
 ## Workload classes
 
-Serverless only. The standard workspaces are serverless type and cannot run classic compute ([Azure infrastructure](azure-infrastructure.md)). Classic compute exists only in a VNet-injected fallback workspace (for example on-prem ingestion), always behind a policy.
+Serverless is the preferred default, not a hard requirement. The standard workspaces are serverless type and cannot run classic compute ([Azure infrastructure](azure-infrastructure.md)); a workload with a justified need for classic compute runs in the VNet-injected fallback workspace (for example on-prem ingestion), always behind a policy, with the justification recorded in its spec.
 
 | Workload | Compute | Governance |
 | --- | --- | --- |
@@ -40,6 +40,7 @@ Serverless only. The standard workspaces are serverless type and cannot run clas
 - Policies start from [Databricks policy families](https://learn.microsoft.com/en-us/azure/databricks/admin/clusters/policy-families) and fix, at minimum: auto-termination (interactive compute), a max DBUs-per-hour ceiling, an allowed node-type list, max compute resources per user, and the required tag set.
 - The baseline tags (`env`, `domain`, `owner`, `costCenter`, `managedBy`) are enforced in the policy's tag rules. An untagged cluster should be impossible to create.
 - Serverless usage is attributed with [serverless usage policies](https://learn.microsoft.com/en-us/azure/databricks/admin/usage/budget-policies) (Public Preview): one per domain, carrying the same baseline tags, which propagate to `system.billing.usage.custom_tags` and Azure cost analysis. Assign each engineer exactly one policy so it applies automatically.
+- Fallback while usage policies are Preview: attribution by identity. `system.billing.usage` joined on the run-as identity maps every DBU to a principal, and principals map to domains by naming convention. If the preview changes or its gaps persist, this query-based attribution is the backstop, not a return to untracked spend.
 - Cost review is standing, not reactive: budgets with alerts in the account console, and `system.billing.usage` queries by tag. Spend that cannot be attributed to a domain is a defect in the policy set, not a finance problem.
 - After any policy change, run compliance enforcement on the governed compute. Policy edits do not propagate to existing resources on their own.
 - Library standardization uses policy-attached libraries, not init scripts; Databricks [recommends compute policies over init scripts](https://learn.microsoft.com/en-us/azure/databricks/admin/clusters/policies) for library installs.

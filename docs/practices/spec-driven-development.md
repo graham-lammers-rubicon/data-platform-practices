@@ -25,7 +25,7 @@ Every spec has five sections. A section that does not apply says so explicitly; 
 ## Where specs live
 
 - In the domain repo, under `specs/`, one Markdown file per data product or platform change, named after the thing it specifies (`sales_daily.md` for `gold.sales_daily`).
-- The spec merges before the implementation PR. Reviewers approve the contract first, then the code against it.
+- The spec should merge before the implementation PR, so reviewers approve the contract first, then the code against it.
 - The spec is versioned with the code it governs. A contract change (grain, metric definition, SCD strategy) is a spec change first, in its own PR, with the version boundary documented per the metric rules.
 
 ## Workflow
@@ -39,7 +39,7 @@ Every spec has five sections. A section that does not apply says so explicitly; 
 
 ## Rules
 
-- No implementation PR merges without a merged spec. "Exploration" in dev needs no spec; anything that MAY be promoted does.
+- A spec SHOULD merge before the implementation PR. This is guidance, not an absolute gate: a small change may proceed without one, but a data product is not certified until its contract elements (decision, grain sentence, acceptance checks) are recorded in a spec. Exploration in dev never needs a spec.
 - Acceptance criteria are executable. A criterion that cannot run in CI or be checked by a named human step is a wish, not a criterion.
 - The spec is the tiebreaker. When code and spec disagree, one of them is fixed in the same PR; they never coexist disagreeing.
 - Agents building against a spec cite the spec section for each design choice and surface conflicts between the spec and this repo's standards instead of resolving them silently.
@@ -54,7 +54,7 @@ Every spec has five sections. A section that does not apply says so explicitly; 
 
 ## Checklist
 
-- [ ] Spec merged before implementation PR, in `specs/`, named after the object
+- [ ] Spec exists in `specs/`, named after the object, ideally merged before the implementation PR
 - [ ] Decision, decision-maker, and follow-on action named, or explicitly informational
 - [ ] Grain stated as an unambiguous sentence; contract complete per the dataset language
 - [ ] Acceptance criteria executable; pivot test included for datasets

@@ -1,6 +1,6 @@
 # Genie and Metric Views
 
-Defines how governed metrics are implemented (Unity Catalog metric views) and how natural-language access is served (Genie spaces on top of them). This is the implementation layer for the semantic rules in [Analytical dataset language](analytical-dataset-language.md) and [BI practices guidance](bi-practices-guidance.md).
+Defines how governed metrics are implemented (Unity Catalog metric views) and how natural-language access is served (Genie spaces on top of them). This is the implementation layer for the semantic rules in [Analytical dataset language](../practices/analytical-dataset-language.md) and [BI practices guidance](../practices/bi-practices-guidance.md).
 
 ## What this covers
 
@@ -14,7 +14,7 @@ A metric view is a Unity Catalog object whose definition is YAML: a source, dime
 
 **Rules:**
 
-- Every governed metric is defined in a metric view in the `gold` schema, pattern `<domain>_metrics` (`gold.sales_metrics`). One definition per metric name, per the [metric governance rules](analytical-dataset-language.md).
+- Every governed metric is defined in a metric view in the `gold` schema, pattern `<domain>_metrics` (`gold.sales_metrics`). One definition per metric name, per the [metric governance rules](../practices/analytical-dataset-language.md).
 - Measures reference Silver measures or Gold serving columns, never another metric view.
 - Ratio and rate metrics are declared as expressions over components (`SUM(shipped_quantity) / SUM(ordered_quantity)`), which is what makes them re-aggregate correctly. Never define a ratio measure over a pre-computed ratio column.
 - Every dimension and measure carries a `comment`; the view carries owner and version the same way other Gold objects do.
@@ -66,14 +66,15 @@ A Genie space is the natural-language interface to a domain's certified metrics.
 - Build spaces on metric views first. A question Genie answers through a metric view is grounded in the governed definition; a question answered by ad hoc SQL over raw columns is a definition fork waiting to happen.
 - Space configuration is code. Export the serialized space to JSON in the domain repo; changes go through PR and are pushed with the CLI (`databricks genie create-space` / `update-space`). A space edited only in the UI is a defect, same as any other click-ops artifact.
 - Every space ships with sample questions, example question SQL, and text instructions. Example SQL must query the metric view, not re-derive the metric from base columns.
+- Well-established recurring questions get [trusted assets](https://learn.microsoft.com/en-us/azure/databricks/genie/trusted-assets): example SQL queries or UC-registered functions that return a verified answer when they match the question. A trusted asset queries the metric view like all other example SQL.
 - Text instructions carry the business context Genie cannot infer: which table answers which question class, thresholds, date-range conventions ("recent" means trailing 7 days), join keys.
-- The space's warehouse is serverless and policy-governed ([Compute policies](../platform/compute-policies.md)).
+- The space's warehouse is serverless and policy-governed ([Compute policies](compute-policies.md)).
 
-**Quality loop:** treat Genie accuracy as testable. The space's spec lists benchmark questions with expected results; run them through the Conversation API after each space change and after upstream schema changes. Wrong or empty answers are fixed by adding example SQL and instructions, not by telling users to rephrase.
+**Quality loop:** treat Genie accuracy as testable, using the native [benchmarks feature](https://learn.microsoft.com/en-us/azure/databricks/genie/benchmarks): each space carries benchmark questions (up to 500) with a SQL answer, so accuracy is scored automatically by comparing result sets. Include two to four phrasings per question. Run benchmarks after each space change and after upstream schema changes; the Conversation API is for automating this in CI, not for hand-rolling scoring. Wrong or empty answers are fixed by adding trusted assets, example SQL, and instructions, not by telling users to rephrase.
 
 ## Certification wiring
 
-- Only certified, decision-grade metric views back a Genie space presented for decision use. An uncertified metric may appear only in a space labeled informational ([BI practices guidance](bi-practices-guidance.md)).
+- Only certified, decision-grade metric views back a Genie space presented for decision use. An uncertified metric may appear only in a space labeled informational ([BI practices guidance](../practices/bi-practices-guidance.md)).
 - A metric definition change is a metric view change in the repo: version bump, documented boundary, benchmark questions re-run.
 - Export events and definition forks remain the defect signals; a Genie space does not change the governance model, it inherits it.
 
@@ -93,7 +94,7 @@ A Genie space is the natural-language interface to a domain's certified metrics.
 - [ ] Every dimension and measure has a comment; view carries owner and version
 - [ ] Genie space scoped to metric views and certified Gold tables only
 - [ ] Space JSON lives in the domain repo; UI state matches the repo
-- [ ] Benchmark questions defined and passing via the Conversation API
+- [ ] Benchmark questions defined in the space with SQL answers; scores reviewed after every change
 - [ ] Decision-grade spaces expose certified definitions only
 
 ## Sources
@@ -101,4 +102,6 @@ A Genie space is the natural-language interface to a domain's certified metrics.
 - Azure Databricks: [Metric views](https://learn.microsoft.com/en-us/azure/databricks/uc-semantics/metric-views/)
 - Azure Databricks: [Create a metric view](https://learn.microsoft.com/en-us/azure/databricks/uc-semantics/metric-views/create)
 - Azure Databricks: [AI/BI Genie](https://learn.microsoft.com/en-us/azure/databricks/genie/)
+- Azure Databricks: [Genie benchmarks](https://learn.microsoft.com/en-us/azure/databricks/genie/benchmarks)
+- Azure Databricks: [Genie trusted assets](https://learn.microsoft.com/en-us/azure/databricks/genie/trusted-assets)
 - Databricks: [Unity Catalog Business Semantics GA](https://www.databricks.com/blog/redefining-semantics-data-layer-future-bi-and-ai)

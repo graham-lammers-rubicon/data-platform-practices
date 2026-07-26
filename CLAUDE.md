@@ -18,10 +18,10 @@ docs/
     medallion-data-practices.md
     analytical-dataset-language.md
     bi-practices-guidance.md
-    genie-and-metric-views.md    Metric views as the metric layer; Genie spaces as code
     tidy-data.md
   platform/                      Infrastructure reference: Azure + Databricks
     azure-infrastructure.md      Serverless workspaces, NCC connectivity, UC wiring, identity, Terraform
+    genie-and-metric-views.md    Metric views as the metric layer; Genie spaces as code
     environments.md              Two tiers (prod/np), env-per-catalog, DAB-only promotion
     cicd-and-deployment.md       GitHub Actions, promotion gates, OIDC identity
     compute-policies.md          Workload classes, policy set, cost attribution
@@ -29,9 +29,11 @@ docs/
     metadata-and-comments.md     UC COMMENTs, commit messages, docstrings
     secrets-and-credentials.md   Storage hierarchy, KV-backed scopes, repo hygiene
     service-principal-auth.md    SP types, standard identities, auth ranking, lifecycle
+    resilience.md                Stub: DR/BCP decision register
   governance/                    Access and usage policy
     access-model.md              Authoritative home of the access matrix
     responsible-use.md           Data handling, compute accountability, GenAI rules
+    data-lifecycle.md            Stub: classification, retention, deletion decision register
 ```
 
 Docs marked stub carry a `> **Status: stub.**` notice: scope is agreed, rules are unwritten, not normative. When writing a stub's content, remove the notice.
@@ -57,7 +59,7 @@ Onboarding content lives under `docs/onboarding/` as role-based paths (data engi
 
 Rules that apply across these docs:
 
-- **Spec before build.** Platform work starts from a spec: requirements, data contracts, acceptance criteria, and validation plan. See `docs/practices/spec-driven-development.md`.
+- **Spec before build, as guidance.** Data products and platform changes should start from a spec: requirements, data contracts, acceptance criteria, validation plan. Not an absolute gate, but nothing is certified without its contract recorded. See `docs/practices/spec-driven-development.md`.
 - **Least privilege by default.** Access is requested per role and per layer, not granted broadly. Downstream consumers never get Bronze or Silver access (see medallion rules below).
 - **Everything is named by convention.** Catalogs, schemas, jobs, and pipelines follow the naming conventions doc. No ad hoc names in examples or templates.
 - **Everything is configuration-as-code.** Workspace, catalog, schema, and permission configuration lives in repos and deploys via Terraform or bundles. A UI-made change to any of these is a defect; the repo is the change record.
@@ -109,7 +111,7 @@ Authoritative version, with the environment axis and job identities: `docs/gover
 | Role | Bronze | Silver | Gold |
 | --- | --- | --- | --- |
 | Domain pipeline SP | READ/WRITE (own domain) | READ/WRITE (own domain) | READ/WRITE (own domain) |
-| Data engineers | READ | dev: READ/WRITE; nonprod/prod: READ | READ |
+| Data engineers | dev: READ/WRITE; else READ | dev: READ/WRITE; else READ | dev: READ/WRITE; else READ |
 | Analysts / data scientists | none | READ (approved) | READ |
 | Consuming services | none | none | READ |
 
@@ -149,7 +151,7 @@ This distinction is where semantic layers break down. Do not conflate them.
 - You store measures. You define metrics. You report metrics to the business.
 - One definition per metric name. Metrics reference measures, not other metrics. Definitions are versioned; when one changes, the version boundary is documented.
 - Non-additive metrics declare how they aggregate across dimensions (total conversions / total clicks, not the average of channel rates).
-- Metrics are implemented as Unity Catalog metric views (`gold.<domain>_metrics`), consumed by dashboards and Genie from the same definition. See `docs/practices/genie-and-metric-views.md`.
+- Metrics are implemented as Unity Catalog metric views (`gold.<domain>_metrics`), consumed by dashboards and Genie from the same definition. See `docs/platform/genie-and-metric-views.md`.
 
 ### Decision-first design (BI standard)
 

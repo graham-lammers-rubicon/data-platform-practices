@@ -94,7 +94,7 @@ Two checks: lineage shows consumers reading governed definitions, never re-imple
 
 The semantic layer must be independent of the visualization tool. Definitions that live inside a BI tool are locked to that tool and diverge the moment a second tool appears.
 
-On this platform these requirements are implemented as Unity Catalog metric views, consumed by dashboards and Genie from the same definition. See [Genie and metric views](genie-and-metric-views.md).
+On this platform these requirements are implemented as Unity Catalog metric views, consumed by dashboards and Genie from the same definition. See [Genie and metric views](../platform/genie-and-metric-views.md).
 
 ### 2.3 Metric definition completeness
 
@@ -262,7 +262,7 @@ Governance must be enforced by the platform architecture, not by policy document
 The control catalog is not restated here. Where each control lives, and how to check it:
 
 - **Access, environments, secrets, deployments:** the [access model](../governance/access-model.md) and the platform reference docs (`docs/platform/`). This doc adds one rule: consumers read certified Gold only (Section 8). Check: no consumer grant below Gold.
-- **Certification and labeling:** Section 1.1 and the acceptance checklist. The label lives in the catalog as governed metadata. Check: queryable for every published output.
+- **Certification and labeling:** Section 1.1 and the acceptance checklist. The label is a Unity Catalog governed tag on the object (certified / informational), applied as code and queryable through the catalog's tag metadata. Check: every published output carries the tag; a certified output with no tag is uncertified.
 - **Lineage and audit:** the trust chain (Section 4) and executive audit items (Section 9). Check: every item producible from platform metadata alone, no humans required.
 
 As more operational systems connect to centralized analytics and data movement gets easier, governance of definitions, access, and usage becomes more critical, not less.

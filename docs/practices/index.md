@@ -8,5 +8,4 @@ Design and delivery standards. These are the authoritative versions of the rules
 - [Medallion data practices](medallion-data-practices.md) - Bronze/Silver/Gold contracts, Unity Catalog governance, Lakeflow SDP patterns, SCD2 placement
 - [Analytical dataset language](analytical-dataset-language.md) - period, grain, dimensions, measures, and metrics as a cross-domain dataset contract
 - [BI practices guidance](bi-practices-guidance.md) - decision-first BI standards: semantic layer, certification, latency, self-service, executive reporting
-- [Genie and metric views](genie-and-metric-views.md) - metric views as the governed metric implementation; Genie spaces as code on top of them
 - [Tidy data](tidy-data.md) - Wickham's tidy data principles and how they map to the medallion layers

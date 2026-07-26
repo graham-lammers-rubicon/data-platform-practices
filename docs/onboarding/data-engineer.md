@@ -2,6 +2,8 @@
 
 You build and operate the pipelines that move data from source through Bronze, Silver, and Gold. This page is your reading order and first-week checklist.
 
+This repo holds the rules; the worked examples live in the reference domain repos (bundle targets, `${param}` configuration, pipeline code, specs, CI workflows). When a rule here says "the bundle target sets it," the reference repo is where you see it set.
+
 ## Read in this order
 
 1. [Access model](../governance/access-model.md) - what you can touch and why the layer boundaries are hard rules

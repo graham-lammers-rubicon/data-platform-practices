@@ -19,13 +19,15 @@ Defines how code moves from branch to production. GitHub Actions is the CI/CD pl
 
 | Trigger | Actions |
 | --- | --- |
-| Pull request | `databricks bundle validate` for every target, unit tests, lint |
+| Pull request | `databricks bundle validate` for every target, lint, tests where they exist (testing standard not yet defined) |
 | Merge to `main` | Deploy `nonprod`, run smoke job and acceptance checks from the spec |
 | Approval gate (GitHub environment `prod`) | Deploy `prod` |
 
 Rules:
 
 - CI uses the `databricks/setup-cli` action pinned to a version; deploys are `databricks bundle deploy -t <target>`.
+- "Everything deployable is a bundle" includes AI/BI dashboards and alerts, which bundles support as resources alongside jobs and pipelines. A certified dashboard that exists only in the UI has no promotion path and cannot stay certified.
+- A testing standard (framework, minimum test set, sample tests) is not yet defined. Until it is, tests are encouraged, not gating; the `nonprod` smoke and acceptance checks carry verification.
 - `nonprod` and `prod` targets use `mode: production` with `run_as` the deployment service principal and an explicit `permissions` block so engineers can view runs they do not own.
 - `prod` is a GitHub environment with required reviewers and a deployment branch policy allowing `main` only. Approval is recorded in GitHub, not in chat.
 - One concurrency group per target; parallel deploys to the same target are blocked.
@@ -56,7 +58,8 @@ Rules:
 
 ## Checklist
 
-- [ ] PR runs validate for all targets plus tests; merge auto-deploys `nonprod` with smoke and acceptance checks
+- [ ] PR runs validate for all targets plus lint; merge auto-deploys `nonprod` with smoke and acceptance checks
+- [ ] Certified dashboards and alerts deploy as bundle resources, not UI artifacts
 - [ ] `prod` is a GitHub environment with required reviewers and a `main`-only branch policy
 - [ ] Zero Databricks tokens in GitHub secrets; auth is `github-oidc` with `id-token: write` on deploy jobs
 - [ ] Federation policies scoped per tier: nonprod to repo and `main` branch, prod to the `prod` environment subject

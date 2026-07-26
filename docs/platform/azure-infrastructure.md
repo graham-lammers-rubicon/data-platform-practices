@@ -2,7 +2,9 @@
 
 Defines the Azure footprint the platform runs on. All infrastructure is Terraform; a portal-created resource is a defect ([Environments](environments.md)). Names come from [Naming conventions](naming-conventions.md).
 
-The platform standard is **serverless workspaces**: no customer-managed VNet, no classic compute plane, all workloads on serverless compute. [Generally available on Azure since January 2026](https://learn.microsoft.com/en-us/azure/databricks/admin/workspace/serverless-workspaces). This removes the network layer we would otherwise have to design, size, and operate (VNet injection, subnets, NAT, NSGs). A VNet-injected workspace is the fallback for the specific cases below, not the default.
+The preferred default is **serverless workspaces**: no customer-managed VNet, no classic compute plane, workloads on serverless compute. [Generally available on Azure since January 2026](https://learn.microsoft.com/en-us/azure/databricks/admin/workspace/serverless-workspaces). This removes the network layer we would otherwise have to design, size, and operate (VNet injection, subnets, NAT, NSGs). A VNet-injected workspace is the documented fallback for the cases below; choosing it is an architecture decision with an owner, not a defect.
+
+The platform deliberately leans into newer Databricks capabilities (serverless workspaces, usage policies, metric views, Lakebase branching). Each preview or beta dependency names its fallback where it is used; the bet is early adoption with a stated exit, not early adoption on faith.
 
 ## What this covers
 
@@ -68,6 +70,18 @@ Identity is the platform's real security boundary; with serverless workspaces th
 - The deploy identity is the Entra-federated managed identity from [Service principal authentication](service-principal-auth.md); plan and apply run in CI only.
 - State is remote in an Azure storage account, encrypted, access-controlled, excluded from git. No secret values in configuration.
 - Every resource carries the baseline tags (`env`, `domain`, `owner`, `costCenter`, `managedBy: terraform`).
+
+## Open decisions (with the Cloud and DevOps teams)
+
+This doc is deliberately a shell on enterprise-network and landing-zone topics. These decisions are open, owned jointly with the Cloud and DevOps teams; each needs an owner and a decision date. Requirements stated, answers not.
+
+| Decision | Question | Owner |
+| --- | --- | --- |
+| Serverless egress control | Serverless compute has unrestricted outbound by default. Do we adopt Databricks account-level network policies to restrict egress, and to what allowlist? | TBD |
+| Subscription topology | One shared subscription with tier resource groups, or prod/nonprod subscription separation under a management group? Blast radius and Azure Policy inheritance follow from this. | TBD |
+| Azure Policy baseline | Which policies are assigned (required tags, allowed regions, public-network-access deny, diagnostic settings deployment)? | TBD |
+| Log Analytics wiring | Which diagnostic settings feed `log-dbx-*`, what retention, what minimum alert set? Today the workspace is named but unused. | TBD |
+| BCDR | Redundancy tiers and recovery: decision register in [Resilience](resilience.md). | TBD |
 
 ## Sharp edges
 

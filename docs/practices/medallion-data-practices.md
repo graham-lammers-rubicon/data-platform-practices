@@ -32,7 +32,7 @@ The access matrix is authoritatively defined in the [Access model](../governance
 | Role | Bronze | Silver | Gold |
 |---|---|---|---|
 | Pipeline service principal | READ/WRITE | READ/WRITE | READ/WRITE |
-| Data engineers | READ | READ/WRITE (dev only) | READ |
+| Data engineers | dev: READ/WRITE; else READ | dev: READ/WRITE; else READ | dev: READ/WRITE; else READ |
 | Analysts / data scientists | ✗ | READ (approved) | READ |
 | Downstream consuming services | ✗ | ✗ | READ |
 
@@ -46,6 +46,8 @@ The access matrix is authoritatively defined in the [Access model](../governance
 Raw. Append-only. Schema-on-read. One table per source entity. No joins, no casting, no renaming, no business logic.
 
 Sources land here as batch files, streaming events, or CDC feeds. Databricks [recommends storing most fields](https://learn.microsoft.com/en-us/azure/databricks/lakehouse/medallion) as `STRING`, `VARIANT`, or binary to survive schema changes. Always configure `rescuedDataColumn`; without it, fields that fail schema match are dropped silently.
+
+**Prefer managed connectors.** Where [Lakeflow Connect](https://learn.microsoft.com/en-us/azure/databricks/ingestion/lakeflow-connect/) has a managed connector for the source (SaaS applications, database CDC), use it: the connector lands Bronze directly and removes the hand-built file-delivery layer. The `read_files` patterns below are for sources without a managed connector, where files land in the landing volume first.
 
 **System columns:**
 ```sql
@@ -171,7 +173,7 @@ Current versions: `WHERE __END_AT IS NULL`. Point-in-time: `__START_AT <= t AND 
 
 Point-in-time balance measures (headcount, inventory, balances) cannot be summed across time; label them semi-additive in the column COMMENT. Ratios do not belong here at all: store numerator and denominator, compute the ratio in Gold.
 
-Silver tables declare their grain in the COMMENT and store one variable per column, one observation per row. Wide source shapes are unpivoted here. Compound codes are split into typed columns. The structure is long and atomic, ready to aggregate in any direction.
+Silver tables declare their grain in the COMMENT and should store one variable per column, one observation per row: long and atomic, ready to aggregate in any direction. Wide source shapes are unpivoted here; compound codes are split into typed columns. This is a strong recommendation, not a gate: when the source shape is volatile, a fixed unpivot silently drops new columns (they land in `_rescued_data` and go no further). For volatile sources, keep Silver closer to the source shape and monitor `_rescued_data` for non-empty rows; restructure when the shape stabilizes ([Tidy data](tidy-data.md): an analysis standard, not a storage mandate).
 
 ```sql
 -- Grain declared: one row per order line per calendar day
@@ -199,7 +201,7 @@ orders (
 
 > **Gold is the governed semantic layer: the single trusted source for analytics, vector stores, GenAI retrieval, REST APIs, and MCP servers. Every object has an owner, a definition, and a version.**
 
-Materialized views are the default for aggregations. Pre-aggregated Delta tables when query performance demands it. Governed business metrics are defined as [Unity Catalog metric views](genie-and-metric-views.md) over Gold and Silver objects: one YAML definition, safe re-aggregation, native Genie and dashboard integration.
+Materialized views are the default for aggregations. Pre-aggregated Delta tables when query performance demands it. Governed business metrics are defined as [Unity Catalog metric views](../platform/genie-and-metric-views.md) over Gold and Silver objects: one YAML definition, safe re-aggregation, native Genie and dashboard integration.
 
 Gold serving tables are wide by design, aggregated to a declared grain. The structure must pivot cleanly: entity rows × period columns × one additive measure. A non-additive output may be exposed at the declared grain only, with numerator and denominator as separate columns and a do-not-re-aggregate COMMENT. Gold reads Silver, never Bronze.
 
@@ -288,7 +290,7 @@ Catalog and environment come from configuration, never from code:
 - Environment-varying values (landing paths, lookback windows) are pipeline configuration parameters set per bundle target: `${param}` in SQL, `spark.conf.get("param")` in Python.
 - `LIVE.` and `APPLY CHANGES INTO` are legacy syntax. Do not use them in new code.
 
-Conformed dimensions (`silver.period`, `silver.entity`, `silver.product`, `silver.location`, `silver.channel`, `silver.org`) are built by one platform-owned pipeline, `conformed-dimensions`, not by domain pipelines. Domain pipelines read them like any other cross-pipeline table.
+Conformed dimensions (`silver.period`, `silver.entity`, `silver.product`, `silver.location`, `silver.channel`, `silver.org`) are built by one platform-owned pipeline, `conformed-dimensions`, not by domain pipelines. Cross-pipeline reads need no special syntax: `FROM silver.period` in a domain pipeline resolves to the same catalog the `conformed-dimensions` pipeline wrote to, because both pipelines get their default catalog from the same bundle target environment.
 
 Cross-domain Gold joins (like `gold.customer_acquisition_cost`) run in a separate pipeline or Lakeflow Job, scheduled after upstream Silver completes, run as its own service principal (see [Access model](../governance/access-model.md)).
 
@@ -324,7 +326,7 @@ Writes outside the pipeline (ad hoc `saveAsTable`, manual MERGE) bypass expectat
 ### 🥇 Gold
 - [ ] Every object has owner + version in TBLPROPERTIES or catalog tags
 - [ ] Definitions reference Silver objects or a Gold serving table (metric views); never Bronze
-- [ ] Business metrics defined as metric views ([Genie and metric views](genie-and-metric-views.md))
+- [ ] Business metrics defined as metric views ([Genie and metric views](../platform/genie-and-metric-views.md))
 - [ ] Non-additive outputs expose numerator and denominator separately
 - [ ] Cross-domain joins defined here once
 - [ ] All consuming services access Gold only

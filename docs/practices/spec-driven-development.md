@@ -1,6 +1,6 @@
 # Spec-driven Development
 
-Work on the data platform starts from a spec, not from code. A spec states what is being built, for whom, the contract it honors, and how everyone will know it works, before implementation begins. The spec is the source CI reads acceptance criteria from ([CI/CD](../platform/cicd-and-deployment.md)); a deploy without a validation step is incomplete.
+Work on the data platform starts from a spec, not from code. A spec states what is being built, for whom, the contract it honors, and how everyone will know it works, before implementation begins. The spec is the source CI reads acceptance criteria from ([CI/CD](../platform/github-cicd-and-deployment.md)); a deploy without a validation step is incomplete.
 
 Scope: this standard governs data products, pipelines, and platform changes: work that ships a contract someone else consumes. It does not apply to documentation-only changes (including this repo), exploration in dev, or other systems. A doc change is reviewed as a PR; it does not need a spec about itself.
 
@@ -66,4 +66,4 @@ Every spec has five sections. A section that does not apply says so explicitly; 
 - [Analytical dataset language](analytical-dataset-language.md): contract elements
 - [BI practices guidance](bi-practices-guidance.md): decision-first design, certification
 - [Medallion data practices](medallion-data-practices.md): layer rules the build must honor
-- [CI/CD and deployment](../platform/cicd-and-deployment.md): where acceptance runs
+- [CI/CD and deployment](../platform/github-cicd-and-deployment.md): where acceptance runs

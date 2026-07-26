@@ -6,9 +6,9 @@ You own the Azure and Databricks infrastructure the platform runs on: provisioni
 
 1. [Access model](../governance/access-model.md) - the grants you will be implementing in Unity Catalog
 2. [Azure infrastructure](../platform/azure-infrastructure.md) - subscriptions, resource groups, workspaces, storage, networking, identity
-3. [Environments](../platform/environments.md) - environment topology and promotion
-4. [CI/CD and deployment](../platform/cicd-and-deployment.md) - bundles, pipelines, deployment identity
-5. [Compute policies](../platform/compute-policies.md), [Naming conventions](../platform/naming-conventions.md), [Secrets and credentials](../platform/secrets-and-credentials.md), [Service principal authentication](../platform/service-principal-auth.md)
+3. [Environments](../platform/databricks-environments.md) - environment topology and promotion
+4. [CI/CD and deployment](../platform/github-cicd-and-deployment.md) - bundles, pipelines, deployment identity
+5. [Compute policies](../platform/databricks-compute-policies.md), [Naming conventions](../platform/naming-conventions.md), [Secrets and credentials](../platform/secrets-and-credentials.md), [Service principal authentication](../platform/databricks-service-principal-auth.md)
 6. [Medallion data practices](../practices/medallion-data-practices.md) - skim the access matrix and pipeline architecture sections; the infrastructure exists to enforce them
 
 ## First-week checklist
@@ -16,7 +16,7 @@ You own the Azure and Databricks infrastructure the platform runs on: provisioni
 - [ ] Azure subscription and Databricks account access granted
 - [ ] Map the current resource group and workspace layout against the [Azure infrastructure](../platform/azure-infrastructure.md) doc; file gaps as issues
 - [ ] Verify Unity Catalog grants match the [access matrix](../governance/access-model.md); flag any consumer with Bronze or Silver access as a defect
-- [ ] Confirm every workspace has cluster policies enforcing the [compute policies](../platform/compute-policies.md)
+- [ ] Confirm every workspace has cluster policies enforcing the [compute policies](../platform/databricks-compute-policies.md)
 - [ ] Run one bundle deployment through the promotion path end to end
 
 ## Rules you will be held to

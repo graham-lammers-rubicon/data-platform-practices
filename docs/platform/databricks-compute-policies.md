@@ -27,7 +27,7 @@ Serverless is the preferred default, not a hard requirement. The standard worksp
 
 | Workload | Compute | Governance |
 | --- | --- | --- |
-| Lakeflow SDP pipelines | Serverless | Serverless usage policy tags; continuous mode is prod-only ([Environments](environments.md)) |
+| Lakeflow SDP pipelines | Serverless | Serverless usage policy tags; continuous mode is prod-only ([Environments](databricks-environments.md)) |
 | Jobs | Serverless; classic via `jobs-standard` policy, fallback workspace only | Policy or usage policy |
 | Interactive notebooks | Serverless | Usage policy |
 | SQL warehouses | Serverless, auto-stop | Sized per team: `<team>-<size>` ([Naming conventions](naming-conventions.md)) |
@@ -36,7 +36,7 @@ Serverless is the preferred default, not a hard requirement. The standard worksp
 ## Rules
 
 - Every classic compute resource is created through a policy. No engineer holds the unrestricted-cluster-creation entitlement; the built-in Unrestricted policy is reachable only by workspace admins, and using it is a defect outside break-glass work.
-- Policies are Terraform-defined per the everything-as-code rule ([Environments](environments.md)), named by workload class (`jobs-standard`, `interactive-standard`). A policy edited in the UI is configuration drift.
+- Policies are Terraform-defined per the everything-as-code rule ([Environments](databricks-environments.md)), named by workload class (`jobs-standard`, `interactive-standard`). A policy edited in the UI is configuration drift.
 - Policies start from [Databricks policy families](https://learn.microsoft.com/en-us/azure/databricks/admin/clusters/policy-families) and fix, at minimum: auto-termination (interactive compute), a max DBUs-per-hour ceiling, an allowed node-type list, max compute resources per user, and the required tag set.
 - The baseline tags (`env`, `domain`, `owner`, `costCenter`, `managedBy`) are enforced in the policy's tag rules. An untagged cluster should be impossible to create.
 - Serverless usage is attributed with [serverless usage policies](https://learn.microsoft.com/en-us/azure/databricks/admin/usage/budget-policies) (Public Preview): one per domain, carrying the same baseline tags, which propagate to `system.billing.usage.custom_tags` and Azure cost analysis. Assign each engineer exactly one policy so it applies automatically.
@@ -44,7 +44,7 @@ Serverless is the preferred default, not a hard requirement. The standard worksp
 - Cost review is standing, not reactive: budgets with alerts in the account console, and `system.billing.usage` queries by tag. Spend that cannot be attributed to a domain is a defect in the policy set, not a finance problem.
 - After any policy change, run compliance enforcement on the governed compute. Policy edits do not propagate to existing resources on their own.
 - Library standardization uses policy-attached libraries, not init scripts; Databricks [recommends compute policies over init scripts](https://learn.microsoft.com/en-us/azure/databricks/admin/clusters/policies) for library installs.
-- Nonprod compute follows the trigger rules in [Environments](environments.md): manual or CI trigger, no standing schedules without a stated reason.
+- Nonprod compute follows the trigger rules in [Environments](databricks-environments.md): manual or CI trigger, no standing schedules without a stated reason.
 
 ## Sharp edges
 

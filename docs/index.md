@@ -9,6 +9,8 @@ It is written for humans and agents. Agents such as Claude Code and Databricks G
 - [Data Engineer](onboarding/data-engineer.md)
 - [BI Analyst](onboarding/bi-analyst.md)
 - [Platform Engineer](onboarding/platform-engineer.md)
+- Not building? Decision-makers, architects, and reviewers: read [BI practices, section 1](practices/bi-practices-guidance.md) for what the platform is for, the [access model](governance/access-model.md) for who may touch what, and the [practices arc](practices/index.md) for how the standards fit together.
+- Agents: [CLAUDE.md](../CLAUDE.md) is the distilled ruleset; these reference docs win when they disagree.
 
 ## Sections
 

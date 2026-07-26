@@ -6,7 +6,7 @@ You turn governed Gold data into outputs that drive decisions. This page is your
 
 1. [Access model](../governance/access-model.md) - you work in Gold; Silver access is by approval, Bronze is off limits
 2. [BI practices guidance](../practices/bi-practices-guidance.md) - the core reference: decision-first design, certification, self-service boundaries
-3. [Genie and metric views](../platform/genie-and-metric-views.md) - how metrics are implemented and how you query them
+3. [Databricks metric views](../platform/databricks-metric-views.md) - how metrics are implemented and how you query them, and [Databricks Genie spaces](../platform/databricks-genie-spaces.md) - the natural-language interface on top of them
 4. [Analytical dataset language](../practices/analytical-dataset-language.md) - period, grain, dimensions, measures, metrics; the vocabulary every dataset contract uses
 5. [Tidy data](../practices/tidy-data.md) - why Gold is wide, and the pivot test as the acceptance check
 6. [Medallion data practices](../practices/medallion-data-practices.md) - skim for context on where your data comes from and why layer boundaries exist

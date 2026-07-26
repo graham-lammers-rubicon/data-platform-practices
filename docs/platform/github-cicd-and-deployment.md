@@ -1,6 +1,6 @@
 # CI/CD and Deployment
 
-Defines how code moves from branch to production. GitHub Actions is the CI/CD platform. Everything deployable is a bundle (DAB); deployment is automation-only above dev (see [Environments](environments.md)).
+Defines how code moves from branch to production. GitHub Actions is the CI/CD platform. Everything deployable is a bundle (DAB); deployment is automation-only above dev (see [Environments](databricks-environments.md)).
 
 ## What this covers
 
@@ -38,7 +38,7 @@ Rules:
 
 - Auth is OIDC workload identity federation: `DATABRICKS_AUTH_TYPE: github-oidc` with `DATABRICKS_HOST` and `DATABRICKS_CLIENT_ID`. No Databricks token is ever stored in GitHub secrets.
 - Deploy jobs set `permissions: id-token: write` (plus `contents: read`). Without it, GitHub refuses to issue the OIDC token and every deploy fails auth.
-- One deployment SP per tier: `sp-dbx-deploy-np`, `sp-dbx-deploy-prod` (see [Naming conventions](naming-conventions.md), [Service principal authentication](service-principal-auth.md)).
+- One deployment SP per tier: `sp-dbx-deploy-np`, `sp-dbx-deploy-prod` (see [Naming conventions](naming-conventions.md), [Service principal authentication](databricks-service-principal-auth.md)).
 - Each SP carries a federation policy (issuer `https://token.actions.githubusercontent.com`) scoped to the narrowest subject claim for this org and repo. The nonprod policy matches subject `repo:<org>/<repo>:ref:refs/heads/main`. The prod policy matches subject `repo:<org>/<repo>:environment:prod`; the `main`-only restriction comes from the environment's deployment branch policy, not the federation subject.
 
 ## Rollback and hotfix

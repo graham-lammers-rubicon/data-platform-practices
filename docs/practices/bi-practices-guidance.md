@@ -94,7 +94,7 @@ Two checks: lineage shows consumers reading governed definitions, never re-imple
 
 The semantic layer must be independent of the visualization tool. Definitions that live inside a BI tool are locked to that tool and diverge the moment a second tool appears.
 
-On this platform these requirements are implemented as Unity Catalog metric views, consumed by dashboards and Genie from the same definition. See [Genie and metric views](../platform/genie-and-metric-views.md).
+On this platform these requirements are implemented as Unity Catalog metric views, consumed by dashboards and Genie from the same definition. See [Databricks metric views](../platform/databricks-metric-views.md) and [Databricks Genie spaces](../platform/databricks-genie-spaces.md).
 
 ### 2.3 Metric definition completeness
 

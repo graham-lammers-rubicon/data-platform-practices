@@ -11,13 +11,13 @@ This repo holds the rules; the worked examples live in the reference domain repo
 3. [Tidy data](../practices/tidy-data.md) - the shape rules for Silver and why Gold is wide
 4. [Analytical dataset language](../practices/analytical-dataset-language.md) - grain, measures vs. metrics; the contract you publish against
 5. [Spec-driven development](../practices/spec-driven-development.md) - no pipeline work starts without a spec
-6. Platform reference as needed: [Environments](../platform/environments.md), [Compute policies](../platform/compute-policies.md), [Naming conventions](../platform/naming-conventions.md), [CI/CD and deployment](../platform/cicd-and-deployment.md), [Secrets and credentials](../platform/secrets-and-credentials.md)
+6. Platform reference as needed: [Environments](../platform/databricks-environments.md), [Compute policies](../platform/databricks-compute-policies.md), [Naming conventions](../platform/naming-conventions.md), [CI/CD and deployment](../platform/github-cicd-and-deployment.md), [Secrets and credentials](../platform/secrets-and-credentials.md)
 
 ## First-week checklist
 
 - [ ] Workspace access granted per the [access model](../governance/access-model.md)
-- [ ] Databricks CLI installed and authenticated with an OAuth profile: `databricks auth login --host <nonprod-workspace-url>` ([human authentication](../platform/service-principal-auth.md#human-authentication))
-- [ ] Repo cloned; dev environment reachable per the [environment guide](../platform/environments.md)
+- [ ] Databricks CLI installed and authenticated with an OAuth profile: `databricks auth login --host <nonprod-workspace-url>` ([human authentication](../platform/databricks-service-principal-auth.md#human-authentication))
+- [ ] Repo cloned; dev environment reachable per the [environment guide](../platform/databricks-environments.md)
 - [ ] Read the medallion reference end to end, including the sharp edges sections
 - [ ] Walk one existing domain pipeline from Bronze table to Gold object and identify the grain declared at each step
 - [ ] Ship one small change through the full spec, review, and deployment path

@@ -94,7 +94,7 @@ Standard tokens, defined once:
 - Region: examples in this repo use the `[region]` placeholder. Set the real CAF region token in Terraform and register it here before first use; do not hardcode a region in docs.
 - Instance: `001`, incremented only when a second instance exists
 
-Azure resources scope to tier, not environment: one nonprod-tier workspace hosts the `dev` and `nonprod` environments (see [Environments](environments.md)).
+Azure resources scope to tier, not environment: one nonprod-tier workspace hosts the `dev` and `nonprod` environments (see [Environments](databricks-environments.md)).
 
 | Resource | Abbrev | Constraint that matters | Example |
 | --- | --- | --- | --- |
@@ -144,7 +144,7 @@ Every secret scope has its own backing vault, 1:1 (see [Secrets and credentials]
 
 Tag keys: `camelCase`. Tag values: freeform but stable; use standard tokens where one exists.
 
-Baseline keys on every Azure and Databricks compute resource: `env`, `domain`, `owner`, `costCenter`, `managedBy` (`terraform` or `bundle`). Enforcement and additional required tags: [Compute policies](compute-policies.md).
+Baseline keys on every Azure and Databricks compute resource: `env`, `domain`, `owner`, `costCenter`, `managedBy` (`terraform` or `bundle`). Enforcement and additional required tags: [Compute policies](databricks-compute-policies.md).
 
 Azure stores tag keys as first written; two spellings of one key (`CostCenter`, `costcenter`) fragment cost reports.
 

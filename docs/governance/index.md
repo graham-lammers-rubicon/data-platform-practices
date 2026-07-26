@@ -1,6 +1,6 @@
 # Governance
 
-Access and usage policy for the platform.
+Access and usage policy for the platform. Read the access model before requesting anything; responsible use binds everyone with access, regardless of role.
 
 ## Pages
 

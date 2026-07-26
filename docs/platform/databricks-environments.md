@@ -40,7 +40,7 @@ All catalogs share the regional Unity Catalog metastore. Workspace-catalog bindi
 
 - Nonprod jobs and pipelines SHOULD run on manual or CI trigger, not schedules. Development mode pauses triggers by default; the `nonprod` target sets the trigger pause preset explicitly. Unpausing a nonprod schedule requires a stated reason.
 - Continuous-mode pipelines are prod-only.
-- Sizing and termination: [Compute policies](compute-policies.md).
+- Sizing and termination: [Compute policies](databricks-compute-policies.md).
 
 ## Test data
 

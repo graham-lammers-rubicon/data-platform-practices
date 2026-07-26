@@ -43,7 +43,7 @@ The matrix applies per environment (`dev_catalog`, `nonprod_catalog`, `prod_cata
 - Automatic identity management (AIM) is the provisioning mechanism. Microsoft Entra ID is the source of record for users and groups; [AIM is enabled by default](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/automatic-identity-management/) for accounts created after 2025-08-01, and Databricks recommends it over SCIM.
 - The Entra SCIM provisioning connector is not used. Databricks [warns that mixing provisioning methods](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/automatic-identity-management/) "causes duplicate entries and permission conflicts"; never stand SCIM up.
 - Grants attach to Entra-synced groups (`grp-<role>-<scope>-<env>`, see [Naming conventions](../platform/naming-conventions.md)). Membership is managed in Entra, never edited in Databricks.
-- Service principals are not provisioned by AIM sync alone: Databricks-managed SPs are created by Terraform ([Service principal authentication](../platform/service-principal-auth.md)); Entra SPs provision on first authentication.
+- Service principals are not provisioned by AIM sync alone: Databricks-managed SPs are created by Terraform ([Service principal authentication](../platform/databricks-service-principal-auth.md)); Entra SPs provision on first authentication.
 - Nested group members inherit permissions, but principals not explicitly provisioned to the account are invisible to Terraform and the APIs. Anything referenced in code is explicitly provisioned.
 
 ## Requesting access

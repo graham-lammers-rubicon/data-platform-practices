@@ -15,21 +15,24 @@ docs/
     platform-engineer.md
   practices/                     Design and delivery standards (reference docs for the rules below)
     spec-driven-development.md   Spec contents, workflow, acceptance in CI
+    data-products.md             Data product definition, principles, anatomy
+    pipeline-automation.md       Automation mantra, human roles, four pillars
     medallion-data-practices.md
     analytical-dataset-language.md
     bi-practices-guidance.md
     tidy-data.md
-  platform/                      Infrastructure reference: Azure + Databricks
+  platform/                      Infrastructure reference, prefixed by system where one owns the doc
     azure-infrastructure.md      Serverless workspaces, NCC connectivity, UC wiring, identity, Terraform
-    genie-and-metric-views.md    Metric views as the metric layer; Genie spaces as code
-    environments.md              Two tiers (prod/np), env-per-catalog, DAB-only promotion
-    cicd-and-deployment.md       GitHub Actions, promotion gates, OIDC identity
-    compute-policies.md          Workload classes, policy set, cost attribution
-    naming-conventions.md        Case styles, name patterns, standard tokens
-    metadata-and-comments.md     UC COMMENTs, commit messages, docstrings
-    secrets-and-credentials.md   Storage hierarchy, KV-backed scopes, repo hygiene
-    service-principal-auth.md    SP types, standard identities, auth ranking, lifecycle
-    resilience.md                Stub: DR/BCP decision register
+    databricks-compute-policies.md      Workload classes, policy set, cost attribution
+    databricks-environments.md   Two tiers (prod/np), env-per-catalog, DAB-only promotion
+    databricks-genie-spaces.md   Genie spaces as code: scope, trusted assets, benchmarks
+    databricks-metric-views.md   Metric views as the governed metric implementation
+    databricks-service-principal-auth.md  SP types, standard identities, auth ranking, lifecycle
+    github-cicd-and-deployment.md  GitHub Actions, promotion gates, OIDC identity
+    naming-conventions.md        Case styles, name patterns, standard tokens (cross-system)
+    metadata-and-comments.md     UC COMMENTs, commit messages, docstrings (cross-system)
+    secrets-and-credentials.md   Storage hierarchy, KV-backed scopes, repo hygiene (cross-system)
+    resilience.md                Stub: DR/BCP decision register (cross-system)
   governance/                    Access and usage policy
     access-model.md              Authoritative home of the access matrix
     responsible-use.md           Data handling, compute accountability, GenAI rules
@@ -125,7 +128,7 @@ One Lakeflow SDP pipeline per domain, owning Bronze through Gold for that scope.
 
 ## 3. Data Products
 
-A data product is a governed dataset published to the analytical layer with a declared contract. The contract has five elements: period, grain, dimensions, measures, metrics.
+A data product is a governed dataset published to the analytical layer with a declared contract. The contract has five elements: period, grain, dimensions, measures, metrics. Principles, anatomy, and consumption patterns: `docs/practices/data-products.md`; the automation standard those products are built under: `docs/practices/pipeline-automation.md`.
 
 ### Grain is the contract
 
@@ -151,7 +154,7 @@ This distinction is where semantic layers break down. Do not conflate them.
 - You store measures. You define metrics. You report metrics to the business.
 - One definition per metric name. Metrics reference measures, not other metrics. Definitions are versioned; when one changes, the version boundary is documented.
 - Non-additive metrics declare how they aggregate across dimensions (total conversions / total clicks, not the average of channel rates).
-- Metrics are implemented as Unity Catalog metric views (`gold.<domain>_metrics`), consumed by dashboards and Genie from the same definition. See `docs/platform/genie-and-metric-views.md`.
+- Metrics are implemented as Unity Catalog metric views (`gold.<domain>_metrics`), consumed by dashboards and Genie from the same definition. See `docs/platform/databricks-metric-views.md` and `docs/platform/databricks-genie-spaces.md`.
 
 ### Decision-first design (BI standard)
 

@@ -22,7 +22,7 @@ The [Databricks recommendation](https://learn.microsoft.com/en-us/azure/databric
 
 | Identity | Type | Auth | Purpose |
 | --- | --- | --- | --- |
-| `sp-dbx-deploy-np`, `sp-dbx-deploy-prod` | Databricks-managed | GitHub OIDC via Databricks federation policy | Bundle deploys ([CI/CD](cicd-and-deployment.md)) |
+| `sp-dbx-deploy-np`, `sp-dbx-deploy-prod` | Databricks-managed | GitHub OIDC via Databricks federation policy | Bundle deploys ([CI/CD](github-cicd-and-deployment.md)) |
 | `sp-<domain>-pipeline-<env>` | Databricks-managed | None held; runs as `run_as` in the bundle | Pipeline and job execution |
 | `id-dbx-deploy-<tier>-001` | Entra user-assigned managed identity | GitHub OIDC via Entra federated credential | Terraform: ARM plus Databricks account provisioning |
 | `sp-<app>-<env>` | Databricks-managed | OAuth M2M | Apps and external callers reading Gold |
@@ -36,7 +36,7 @@ Humans authenticate the Databricks CLI and IDE integrations with OAuth user-to-m
 - `databricks auth login --host https://<workspace-url> --profile <name>` runs a browser login and writes a profile to `~/.databrickscfg` with auth type `databricks-cli`. Tokens are short-lived (under an hour) and refreshed by the CLI.
 - From CLI v1.0, tokens live in OS-native secure storage; `.databrickscfg` holds only host and profile name, never a credential.
 - Keep one profile per workspace tier (`np`, `prod`). Developer bundle deploys to the `dev` target use the nonprod profile; auth resolves bundle settings, then environment variables, then profiles.
-- Human auth is for development in the nonprod workspace. `nonprod` and `prod` targets deploy only from CI as the deploy SP ([Environments](environments.md)).
+- Human auth is for development in the nonprod workspace. `nonprod` and `prod` targets deploy only from CI as the deploy SP ([Environments](databricks-environments.md)).
 
 ## Rules
 
@@ -48,7 +48,7 @@ Humans authenticate the Databricks CLI and IDE integrations with OAuth user-to-m
   1. Workload identity federation (Databricks federation policy or Entra federated credential). No stored credential.
   2. OAuth M2M client secret, stored in a Key Vault-backed secret scope with a rotation owner ([Secrets and credentials](secrets-and-credentials.md)).
   3. Personal access tokens: banned. [Databricks documents PATs as legacy](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/manage-service-principals), for use "only when OAuth is not supported"; no such case exists on this platform.
-- Databricks federation policies attach only to Databricks-managed SPs. Policy scoping rules: [CI/CD](cicd-and-deployment.md).
+- Databricks federation policies attach only to Databricks-managed SPs. Policy scoping rules: [CI/CD](github-cicd-and-deployment.md).
 - Entra auth types (`azure-cli`, managed identity) are used only by the Terraform identity. Workload SPs authenticate with Databricks OAuth.
 - Deactivate before delete. Deactivation blocks authentication and is reversible; deletion fails jobs, stops compute owned by the SP, and breaks Run-as-Owner dashboards until ownership is reassigned.
 - On-behalf-of and Databricks Apps user-authorization patterns are not yet written; add them here when the first app ships.

@@ -201,7 +201,7 @@ orders (
 
 > **Gold is the governed semantic layer: the single trusted source for analytics, vector stores, GenAI retrieval, REST APIs, and MCP servers. Every object has an owner, a definition, and a version.**
 
-Materialized views are the default for aggregations. Pre-aggregated Delta tables when query performance demands it. Governed business metrics are defined as [Unity Catalog metric views](../platform/genie-and-metric-views.md) over Gold and Silver objects: one YAML definition, safe re-aggregation, native Genie and dashboard integration.
+Materialized views are the default for aggregations. Pre-aggregated Delta tables when query performance demands it. Governed business metrics are defined as [Unity Catalog metric views](../platform/databricks-metric-views.md) over Gold and Silver objects: one YAML definition, safe re-aggregation, native Genie and dashboard integration.
 
 Gold serving tables are wide by design, aggregated to a declared grain. The structure must pivot cleanly: entity rows × period columns × one additive measure. A non-additive output may be exposed at the declared grain only, with numerator and denominator as separate columns and a do-not-re-aggregate COMMENT. Gold reads Silver, never Bronze.
 
@@ -326,7 +326,7 @@ Writes outside the pipeline (ad hoc `saveAsTable`, manual MERGE) bypass expectat
 ### 🥇 Gold
 - [ ] Every object has owner + version in TBLPROPERTIES or catalog tags
 - [ ] Definitions reference Silver objects or a Gold serving table (metric views); never Bronze
-- [ ] Business metrics defined as metric views ([Genie and metric views](../platform/genie-and-metric-views.md))
+- [ ] Business metrics defined as metric views ([Databricks metric views](../platform/databricks-metric-views.md))
 - [ ] Non-additive outputs expose numerator and denominator separately
 - [ ] Cross-domain joins defined here once
 - [ ] All consuming services access Gold only

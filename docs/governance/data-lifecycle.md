@@ -2,7 +2,7 @@
 
 > **Status: stub.** Scope and required decisions are agreed; the answers are not. This doc is not normative until the decisions below are made and the notice is removed.
 
-Defines how data is classified, how long each layer keeps it, and how it is deleted when required. These policies must be designed against the architecture's standing facts: Bronze is append-only and is the replay source for Silver ([Medallion data practices](../practices/medallion-data-practices.md)), prod data is cloned into nonprod for testing ([Environments](../platform/environments.md)), and Delta time travel retains history beyond a DELETE.
+Defines how data is classified, how long each layer keeps it, and how it is deleted when required. These policies must be designed against the architecture's standing facts: Bronze is append-only and is the replay source for Silver ([Medallion data practices](../practices/medallion-data-practices.md)), prod data is cloned into nonprod for testing ([Environments](../platform/databricks-environments.md)), and Delta time travel retains history beyond a DELETE.
 
 ## Decisions to make
 

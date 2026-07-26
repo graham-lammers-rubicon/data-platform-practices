@@ -300,7 +300,7 @@ Presentation      →  BI tools, dashboards, notebooks query Gold metrics,
 
 > The Gold layer is where measures become metrics. It is not optional in a production system. Without it, every BI tool becomes its own semantic layer and definitions diverge.
 
-On this platform, metrics are implemented as Unity Catalog metric views: the definition (dimensions, measures, filters, comments) lives in YAML on a governed UC object, aggregation happens at query time via `MEASURE()`, and Genie and AI/BI dashboards consume the same definition. See [Genie and metric views](../platform/genie-and-metric-views.md).
+On this platform, metrics are implemented as Unity Catalog metric views: the definition (dimensions, measures, filters, comments) lives in YAML on a governed UC object, aggregation happens at query time via `MEASURE()`, and Genie and AI/BI dashboards consume the same definition. See [Databricks metric views](../platform/databricks-metric-views.md).
 
 **Pivoting metrics:** Metrics that are additive or derived from additive components pivot cleanly. Rate and composite metrics do not pivot directly. They must be computed from their component measures at each pivot grain. Document this on every non-additive metric definition.
 

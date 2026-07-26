@@ -1,6 +1,6 @@
 # Azure Infrastructure
 
-Defines the Azure footprint the platform runs on. All infrastructure is Terraform; a portal-created resource is a defect ([Environments](environments.md)). Names come from [Naming conventions](naming-conventions.md).
+Defines the Azure footprint the platform runs on. All infrastructure is Terraform; a portal-created resource is a defect ([Environments](databricks-environments.md)). Names come from [Naming conventions](naming-conventions.md).
 
 The preferred default is **serverless workspaces**: no customer-managed VNet, no classic compute plane, workloads on serverless compute. [Generally available on Azure since January 2026](https://learn.microsoft.com/en-us/azure/databricks/admin/workspace/serverless-workspaces). This removes the network layer we would otherwise have to design, size, and operate (VNet injection, subnets, NAT, NSGs). A VNet-injected workspace is the documented fallback for the cases below; choosing it is an architecture decision with an owner, not a defect.
 
@@ -53,21 +53,21 @@ Serverless compute runs in the Databricks tenant, so network access is configure
 - No metastore-level root storage. Managed storage is declared per catalog, pointing at the tier storage account, so tier isolation holds at the storage layer.
 - Storage access is via the tier access connector's managed identity registered as a UC storage credential. No service principal credentials for storage, nothing to rotate.
 - The metastore admin role is held by a platform team group, not an individual.
-- Catalog-workspace bindings enforce the tier boundary ([Environments](environments.md)); `prod_catalog` is `ISOLATED` before the first data lands.
+- Catalog-workspace bindings enforce the tier boundary ([Environments](databricks-environments.md)); `prod_catalog` is `ISOLATED` before the first data lands.
 
 ## Identity
 
 Identity is the platform's real security boundary; with serverless workspaces there is no network perimeter to lean on.
 
 - Users and groups: Microsoft Entra ID via automatic identity management; grants attach to Entra-synced groups only ([Access model](../governance/access-model.md)).
-- Automation: Databricks-managed service principals with OIDC federation, no stored credentials ([Service principal authentication](service-principal-auth.md)).
-- Humans authenticate to the CLI with OAuth U2M profiles ([Service principal authentication](service-principal-auth.md#human-authentication)).
+- Automation: Databricks-managed service principals with OIDC federation, no stored credentials ([Service principal authentication](databricks-service-principal-auth.md)).
+- Humans authenticate to the CLI with OAuth U2M profiles ([Service principal authentication](databricks-service-principal-auth.md#human-authentication)).
 - Storage and Azure services: managed identities (access connector, Terraform deploy identity). No PATs, no client secrets where federation works.
 
 ## Terraform standard
 
 - One infrastructure repo owns everything above plus identities, grants, policies, scopes, and workspace configuration. Providers: `azurerm` for Azure resources, `databricks` for account and workspace objects.
-- The deploy identity is the Entra-federated managed identity from [Service principal authentication](service-principal-auth.md); plan and apply run in CI only.
+- The deploy identity is the Entra-federated managed identity from [Service principal authentication](databricks-service-principal-auth.md); plan and apply run in CI only.
 - State is remote in an Azure storage account, encrypted, access-controlled, excluded from git. No secret values in configuration.
 - Every resource carries the baseline tags (`env`, `domain`, `owner`, `costCenter`, `managedBy: terraform`).
 

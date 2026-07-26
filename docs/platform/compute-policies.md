@@ -4,10 +4,22 @@ Defines compute governance: which compute type each workload class uses, the pol
 
 ## What this covers
 
+- Individual cost discretion: the spend judgment policies cannot enforce
 - Workload classes and their compute types
 - The policy set and what each policy fixes
 - Cost attribution: tags, serverless usage policies, budgets
 - Compliance enforcement when policies change
+
+## Cost discretion by individuals
+
+Conduct obligations (purpose-bound compute, tagging workarounds, self-reporting) live in [Responsible use](../governance/responsible-use.md). This section is the judgment policies cannot enforce: whether a run is a good use of money. Serverless bills per second; what you run is what the domain pays for, and your usage policy attributes it to you.
+
+- Know your cost before you launch. A full refresh, a large backfill, or a high-frequency schedule is a spend decision; size the run to the need and prefer incremental over full recomputes.
+- Long-running jobs and notebooks burn DBUs for their entire duration. Always use discretion: estimate the runtime before launching, check on runs that should have finished, and kill anything far past its estimate instead of letting it complete.
+- You stop what you start. An idle warehouse or a forgotten continuous run is your spend until it is stopped.
+- Right-size warehouses and let auto-stop work. Do not resize a shared warehouse for a one-off query; use a smaller one or ask the platform team.
+- Schedules are standing costs. A schedule nobody reads output from is pure waste and gets removed, not tolerated.
+- Your spend is visible: `system.billing.usage` filtered by your tags shows what you cost, per day. Check it when you change how you work; attributed but unjustified spend is yours to explain.
 
 ## Workload classes
 
@@ -48,6 +60,7 @@ Serverless only. The standard workspaces are serverless type and cannot run clas
 - [ ] No non-admin identity has unrestricted cluster creation
 - [ ] Policies fix auto-termination, DBU ceiling, node types, max resources per user, and required tags
 - [ ] Every engineer has exactly one serverless usage policy; every domain's serverless spend is tagged
+- [ ] Engineers can run the `system.billing.usage` query for their own tags; nonprod shows no unowned schedules or idle standing compute
 - [ ] `system.billing.usage` shows zero unattributable spend
 - [ ] Budgets with alerts exist per domain and per tier
 - [ ] Compliance enforcement ran after the last policy change

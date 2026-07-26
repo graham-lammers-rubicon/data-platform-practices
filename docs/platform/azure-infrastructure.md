@@ -39,7 +39,7 @@ Domain secret vaults (`kv-<domain>-<env>-[region]-001`) are created per secret s
 Serverless compute runs in the Databricks tenant, so network access is configured through [network connectivity configurations (NCCs)](https://learn.microsoft.com/en-us/azure/databricks/security/network/serverless-network-security/), account-level objects attached to the workspace. Terraform-managed like everything else.
 
 - **Azure resources (storage, Key Vault, databases):** add a private endpoint to the NCC; approve the request on the target resource. Supported from SQL warehouses, jobs, pipelines, and model serving.
-- **Locked-down storage without private endpoints:** allowlist the `AzureDatabricksServerless` service tag through an Azure Network Security Perimeter. Storage accounts still allowlisting serverless subnet IDs must move to NSP by 2026-06-09.
+- **Locked-down storage without private endpoints:** allowlist the `AzureDatabricksServerless` service tag through an Azure Network Security Perimeter. The NSP requirement has been in force since 2026-06-09; do not build on serverless subnet-ID allowlists.
 - **Resources inside a VNet:** NCC private endpoint to a Private Link service fronting an internal load balancer (or Application Gateway) in that VNet.
 - **On-premises resources:** not a documented serverless connectivity target. Do not design a serverless workload that assumes a route to on-prem. The supported patterns, in preference order:
   1. Land the data behind an Azure endpoint serverless can reach: push or replicate from on-prem to ADLS, Event Hubs, or an Azure database, then ingest normally. This is the default answer.
@@ -76,7 +76,7 @@ Identity is the platform's real security boundary; with serverless workspaces th
 - One metastore per region means a second region is a second metastore with a disjoint namespace. Region expansion is an architecture change, not a Terraform variable.
 - Verify current `azurerm`/`databricks` provider support for the serverless workspace type before the first deploy; the offering is newer than most provider examples.
 - NCC private-endpoint rules to Private Link services do not support DNS chasing; plan target domain names explicitly.
-- The 2026-06-09 Network Security Perimeter deadline applies to any storage firewall still allowlisting serverless subnet IDs.
+- The Network Security Perimeter requirement (in force since 2026-06-09) applies to any storage firewall still allowlisting serverless subnet IDs; migrate any legacy allowlist immediately.
 - If a VNet-injected fallback workspace is ever built: subnet CIDRs are immutable after deployment and are a hard cluster-count ceiling, and new VNets need an explicit egress method (NAT gateway) since Azure's [default outbound retirement](https://learn.microsoft.com/en-us/azure/virtual-network/ip-services/default-outbound-access) (API versions after 2026-03-31 default subnets to private). Size and design before deploying, not after.
 
 ## Checklist

@@ -97,7 +97,7 @@ No layer prefixes in table or column names. The schema tells you the layer; the 
 ### Gold: govern, enrich, serve
 
 - Gold is the governed semantic layer and the only layer consuming services touch: analytics, GenAI retrieval, APIs, MCP servers. If any consumer has a connection to Bronze or Silver, that is a defect.
-- Every Gold object has an owner and version (`TBLPROPERTIES` or catalog tags). Definitions reference Silver measures, not other Gold objects.
+- Every Gold object has an owner and version (`TBLPROPERTIES` or catalog tags). Definitions reference Silver measures; a metric view may source a Gold serving table. Nothing references another derived Gold definition.
 - Gold is wide by design, aggregated to a declared grain, and must pass the pivot test (entity rows × period columns × one additive measure).
 - Non-additive outputs expose numerator and denominator as separate columns and are documented as "do not re-aggregate."
 - Cross-domain joins (e.g., CAC across marketing, HR, and sales) are defined once in Gold, never re-derived per consumer.

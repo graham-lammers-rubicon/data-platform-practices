@@ -22,6 +22,7 @@ Defines what acceptable use of the platform's data and compute means, and how us
 - Platform compute runs platform workloads. Personal experimentation happens in dev under the interactive policy with auto-termination; anything long-running or scheduled needs an owner and a tag trail ([Compute policies](../platform/compute-policies.md)).
 - Spend is accountable: every DBU traces to a domain and owner through tags. Working around the policy set to get untagged compute is a violation even when the work itself is legitimate.
 - Unpausing a nonprod schedule requires a stated reason ([Environments](environments.md)).
+- Cost discretion for individual runs (estimating before launch, killing overruns, right-sizing): [Compute policies](../platform/compute-policies.md#cost-discretion-by-individuals).
 
 ## GenAI and agents
 

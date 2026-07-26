@@ -323,7 +323,7 @@ Writes outside the pipeline (ad hoc `saveAsTable`, manual MERGE) bypass expectat
 
 ### 🥇 Gold
 - [ ] Every object has owner + version in TBLPROPERTIES or catalog tags
-- [ ] Definitions reference Silver objects only; no Bronze reads
+- [ ] Definitions reference Silver objects or a Gold serving table (metric views); never Bronze
 - [ ] Business metrics defined as metric views ([Genie and metric views](genie-and-metric-views.md))
 - [ ] Non-additive outputs expose numerator and denominator separately
 - [ ] Cross-domain joins defined here once

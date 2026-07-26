@@ -254,7 +254,7 @@ Governance must be enforced by the platform architecture, not by policy document
 
 The control catalog is not restated here. Where each control lives, and how to check it:
 
-- **Access, environments, secrets, deployments:** the onboarding cloud resource policies (`docs/onboarding/cloud-resources/`). This doc adds one rule: consumers read certified Gold only (Section 8). Check: no consumer grant below Gold.
+- **Access, environments, secrets, deployments:** the [access model](../governance/access-model.md) and the platform reference docs (`docs/platform/`). This doc adds one rule: consumers read certified Gold only (Section 8). Check: no consumer grant below Gold.
 - **Certification and labeling:** Section 1.1 and the acceptance checklist. The label lives in the catalog as governed metadata. Check: queryable for every published output.
 - **Lineage and audit:** the trust chain (Section 4) and executive audit items (Section 9). Check: every item producible from platform metadata alone, no humans required.
 

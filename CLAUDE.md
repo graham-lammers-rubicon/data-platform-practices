@@ -6,15 +6,31 @@ Guidance for working in this repository. This repo captures data platform practi
 
 ```text
 docs/
-  index.md                       Site entry point
-  onboarding/                    Team onboarding and governance
-    cloud-resources/             Databricks-specific operational policies
-  practices/                     Full reference docs for the rules below
+  index.md                       Site entry point with role router
+  onboarding/                    Role-based entry paths
+    data-engineer.md
+    bi-analyst.md
+    platform-engineer.md
+  practices/                     Design and delivery standards (reference docs for the rules below)
+    spec-driven-development.md   (stub)
     medallion-data-practices.md
     analytical-dataset-language.md
     bi-practices-guidance.md
     tidy-data.md
+  platform/                      Infrastructure reference: Azure + Databricks (all stubs)
+    azure-infrastructure.md
+    environments.md
+    cicd-and-deployment.md
+    compute-policies.md
+    naming-conventions.md
+    secrets-and-credentials.md
+    service-principal-auth.md
+  governance/                    Access and usage policy
+    access-model.md              Authoritative home of the access matrix
+    responsible-use.md           (stub)
 ```
+
+Docs marked stub carry a `> **Status: stub.**` notice: scope is agreed, rules are unwritten, not normative. When writing a stub's content, remove the notice.
 
 The sections below are the distilled rules. The full references with patterns, examples, and checklists live in `docs/practices/`. When the summary here and a reference doc disagree, the reference doc wins; fix the summary.
 
@@ -30,13 +46,13 @@ When adding a page, register it in the parent `index.md`. Keep the doc tree and 
 
 ---
 
-## 1. Onboarding Policies
+## 1. Onboarding, Platform, and Governance
 
-Onboarding content lives under `docs/onboarding/`. Cloud resource policies live under `docs/onboarding/cloud-resources/` and cover: access requests, compute policies, environment guide, naming conventions, secrets and credentials, service principal auth for Databricks Apps, responsible use, and spec-driven development.
+Onboarding content lives under `docs/onboarding/` as role-based paths (data engineer, BI analyst, platform engineer): reading order, first-week checklist, and the rules that role is held to. Infrastructure reference docs live under `docs/platform/` (Azure footprint, environments, CI/CD, compute, naming, secrets, service principal auth). Access and usage policy lives under `docs/governance/`; the access matrix in section 2 below is authoritatively defined in `docs/governance/access-model.md`.
 
-Rules that apply across onboarding docs:
+Rules that apply across these docs:
 
-- **Spec before build.** Platform work starts from a spec: requirements, data contracts, acceptance criteria, and validation plan. See `docs/onboarding/cloud-resources/spec-driven-development.md`.
+- **Spec before build.** Platform work starts from a spec: requirements, data contracts, acceptance criteria, and validation plan. See `docs/practices/spec-driven-development.md`.
 - **Least privilege by default.** Access is requested per role and per layer, not granted broadly. Downstream consumers never get Bronze or Silver access (see medallion rules below).
 - **Everything is named by convention.** Catalogs, schemas, jobs, and pipelines follow the naming conventions doc. No ad hoc names in examples or templates.
 - **No secrets in code or docs.** Credentials go through secret scopes or service principal auth. Docs must never contain real hostnames, tokens, or workspace IDs.

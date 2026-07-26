@@ -26,7 +26,7 @@ docs/
     compute-policies.md          (stub)
     naming-conventions.md        Case styles, name patterns, standard tokens
     metadata-and-comments.md     UC COMMENTs, commit messages, docstrings
-    secrets-and-credentials.md   (stub)
+    secrets-and-credentials.md   Storage hierarchy, KV-backed scopes, repo hygiene
     service-principal-auth.md    SP types, standard identities, auth ranking, lifecycle
   governance/                    Access and usage policy
     access-model.md              Authoritative home of the access matrix

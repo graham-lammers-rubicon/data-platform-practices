@@ -130,9 +130,12 @@ Grants attach to groups, never users (see [Access model](../governance/access-mo
 | Object | Pattern | Example |
 | --- | --- | --- |
 | Secret scope | `<domain>-<env>` | `sales-prod` |
+| Backing key vault | `kv-<domain>-<env>-wus-001` | `kv-sales-prod-wus-001` |
 | Secret key | `<system>-<credential>` | `salesforce-client-secret` |
 
 Key Vault secret names permit only alphanumerics and hyphens; `kebab-case` is forced. No environment or hostname in key names; the scope carries the environment.
+
+Every secret scope has its own backing vault, 1:1 (see [Secrets and credentials](secrets-and-credentials.md)). The 24-character vault budget breaks on long domain tokens: abbreviate `nonprod` to `np` only where forced, and register any shortened domain token here before first use. The tier vault `kv-dplat-<tier>-wus-001` holds platform secrets only, never domain scope secrets.
 
 ## Tags
 

@@ -32,7 +32,7 @@ All UC names: `snake_case`, ASCII `[a-z0-9_]`, starting with a letter. UC permit
 
 | Object | Pattern | Example |
 | --- | --- | --- |
-| Catalog | `<env>_catalog` | `dev_catalog`, `prd_catalog` |
+| Catalog | `<env>_catalog` | `dev_catalog`, `prod_catalog` |
 | Schema | medallion layer | `bronze`, `silver`, `gold` |
 | Bronze table | `<entity>` | `customer`, `order_line` |
 | Silver table | `<domain>` fact or entity | `sales`, `customer` |
@@ -73,30 +73,30 @@ Rules:
 
 ## Azure resources
 
-Pattern: `<abbrev>-<workload>-<env>-<region>-<instance>`, using Cloud Adoption Framework abbreviations. Workload for this platform: `dataplat`.
+Pattern: `<abbrev>-<workload>-<env>-<region>-<instance>`, using Cloud Adoption Framework abbreviations. Workload for this platform: `dplat`.
 
 Standard tokens, defined once:
 
-- Environments (catalogs, bundle targets): `dev`, `qa`, `test`, `prd`
-- Workspace tiers (Azure resources, workspaces): `np` (nonprod), `prd`
-- Regions: `eus2` (East US 2); add tokens as regions are added
+- Environments (catalogs, bundle targets): `dev`, `qa`, `test`, `prod`
+- Workspace tiers (Azure resources, workspaces): `np` (nonprod), `prod`
+- Regions: `wus` (West US); add tokens as regions are added
 - Instance: `001`, incremented only when a second instance exists
 
 Azure resources scope to tier, not environment: one nonprod workspace hosts `dev`, `qa`, and `test` (see [Environments](environments.md)).
 
 | Resource | Abbrev | Constraint that matters | Example |
 | --- | --- | --- | --- |
-| Resource group | `rg` | 1-90 chars | `rg-dataplat-np-eus2-001` |
-| Databricks workspace | `dbw` | 3-64, alphanumerics, underscores, hyphens | `dbw-dataplat-np-eus2-001` |
-| Databricks access connector | `dbac` | | `dbac-dataplat-np-eus2-001` |
-| Storage account | `st` | 3-24, lowercase alphanumeric only, globally unique | `stdataplatnpeus2001` |
+| Resource group | `rg` | 1-90 chars | `rg-dplat-np-wus-001` |
+| Databricks workspace | `dbw` | 3-64, alphanumerics, underscores, hyphens | `dbw-dplat-np-wus-001` |
+| Databricks access connector | `dbac` | | `dbac-dplat-np-wus-001` |
+| Storage account | `st` | 3-24, lowercase alphanumeric only, globally unique | `stdplatnpwus001` |
 | ADLS container | none | 3-63, lowercase, numbers, hyphens | `bronze-landing`, `uc-managed` |
-| Key vault | `kv` | 3-24, alphanumerics and hyphens, globally unique | `kv-dataplat-np-eus2-001` |
-| Virtual network | `vnet` | 2-64 | `vnet-dataplat-np-eus2-001` |
+| Key vault | `kv` | 3-24, alphanumerics and hyphens, globally unique | `kv-dplat-np-wus-001` |
+| Virtual network | `vnet` | 2-64 | `vnet-dplat-np-wus-001` |
 | Subnet | `snet` | | `snet-dbw-private-001` |
-| Private endpoint | `pep` | | `pep-stdataplatnpeus2001-blob` |
-| Log Analytics workspace | `log` | | `log-dataplat-np-eus2-001` |
-| Managed identity | `id` | | `id-dataplat-deploy-np-001` |
+| Private endpoint | `pep` | | `pep-stdplatnpwus001-blob` |
+| Log Analytics workspace | `log` | | `log-dplat-np-wus-001` |
+| Managed identity | `id` | | `id-dplat-deploy-np-001` |
 
 Rules:
 
@@ -107,10 +107,10 @@ Rules:
 
 | Object | Pattern | Example |
 | --- | --- | --- |
-| Pipeline service principal | `sp-<domain>-pipeline-<env>` | `sp-sales-pipeline-prd` |
-| Deployment service principal | `sp-dataplat-deploy-<env>` | `sp-dataplat-deploy-prd` |
-| App service principal | `sp-<app>-<env>` | `sp-salesapi-prd` |
-| Entra / UC group | `grp-<role>-<scope>-<env>` | `grp-analysts-gold-prd`, `grp-dataeng-dev` |
+| Pipeline service principal | `sp-<domain>-pipeline-<env>` | `sp-sales-pipeline-prod` |
+| Deployment service principal | `sp-dplat-deploy-<env>` | `sp-dplat-deploy-prod` |
+| App service principal | `sp-<app>-<env>` | `sp-salesapi-prod` |
+| Entra / UC group | `grp-<role>-<scope>-<env>` | `grp-analysts-gold-prod`, `grp-dataeng-dev` |
 
 Grants attach to groups, never users (see [Access model](../governance/access-model.md)). Group names encode role and scope so a grant audits from the name alone.
 
@@ -118,7 +118,7 @@ Grants attach to groups, never users (see [Access model](../governance/access-mo
 
 | Object | Pattern | Example |
 | --- | --- | --- |
-| Secret scope | `<domain>-<env>` | `sales-prd` |
+| Secret scope | `<domain>-<env>` | `sales-prod` |
 | Secret key | `<system>-<credential>` | `salesforce-client-secret` |
 
 Key Vault secret names permit only alphanumerics and hyphens; `kebab-case` is forced. No environment or hostname in key names; the scope carries the environment.
@@ -144,7 +144,7 @@ Azure stores tag keys as first written; two spellings of one key (`CostCenter`, 
 - Column names with special characters require Delta column mapping and break downstream tools. Stay in `[a-z0-9_]`.
 - A kebab notebook fails at `import` with a syntax error; the fix is a rename that breaks every referencing job path. Decide import-vs-entry-point at creation.
 - Storage account and key vault names are globally unique; a reviewed name can still fail at deploy. Check availability in the infrastructure pipeline, not manually.
-- The 24-character storage budget is consumed by tokens; lengthening `dataplat` or adding a token breaks the one resource type that cannot take hyphens.
+- The 24-character storage budget is consumed by tokens; lengthening `dplat` or adding a token breaks the one resource type that cannot take hyphens.
 - Environment in a job or pipeline name means promotion renames it, orphaning run history and breaking references.
 - Renaming a UC table does not update downstream views, dashboards, or retrieval configs. Fix bad names immediately or live with them.
 

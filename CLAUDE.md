@@ -19,7 +19,7 @@ docs/
     tidy-data.md
   platform/                      Infrastructure reference: Azure + Databricks
     azure-infrastructure.md      (stub)
-    environments.md              Two tiers (prd/np), env-per-catalog, DAB-only promotion
+    environments.md              Two tiers (prod/np), env-per-catalog, DAB-only promotion
     cicd-and-deployment.md       (stub)
     compute-policies.md          (stub)
     naming-conventions.md        Case styles, name patterns, standard tokens

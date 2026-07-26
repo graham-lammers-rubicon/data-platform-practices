@@ -6,6 +6,7 @@ Defines who can read and write each medallion layer, how access is requested, an
 
 - The role-by-layer access matrix
 - The rules behind it
+- How identities and groups are provisioned
 - How to request access and how requests are reviewed
 
 ## Access matrix
@@ -24,7 +25,16 @@ Defines who can read and write each medallion layer, how access is requested, an
 - Analyst Silver access requires approval and is READ only. It exists for profiling and validation work, not for building consumer-facing outputs.
 - Production writes go through pipeline service principals only. Human identities do not hold production WRITE.
 - All grants live in Unity Catalog on groups, not individual users. Audit comes from UC system tables, not spreadsheets.
+- Every grant is declared in the Terraform repo and applied by CI. A grant issued through the UI or an ad hoc `GRANT` statement is a defect, even when the access itself is correct; re-issue it through code.
 - Self-service means exploring certified Gold data. Direct business-user access to raw tables is not self-service; it is distributed data engineering without standards (see [BI practices guidance](../practices/bi-practices-guidance.md)).
+
+## Identity provisioning
+
+- Automatic identity management (AIM) is the provisioning mechanism. Microsoft Entra ID is the source of record for users and groups; AIM is enabled by default for accounts created after 2025-08-01.
+- The Entra SCIM provisioning connector is not used. Running SCIM and AIM in parallel creates duplicate identities and permission conflicts; never stand SCIM up.
+- Grants attach to Entra-synced groups (`grp-<role>-<scope>-<env>`, see [Naming conventions](../platform/naming-conventions.md)). Membership is managed in Entra, never edited in Databricks.
+- Service principals are not provisioned by AIM sync alone: Databricks-managed SPs are created by Terraform ([Service principal authentication](../platform/service-principal-auth.md)); Entra SPs provision on first authentication.
+- Nested group members inherit permissions, but principals not explicitly provisioned to the account are invisible to Terraform and the APIs. Anything referenced in code is explicitly provisioned.
 
 ## Requesting access
 
@@ -40,10 +50,22 @@ To be written:
 
 - Granting an analyst Silver access "temporarily" for one report creates a permanent dependency. If a consumer needs a Silver measure, the fix is a Gold object, not a grant.
 - Grants to individual users survive team changes silently. Group-based grants are the only auditable pattern.
+- Renaming a group in Entra does not sync proactively; the name updates only when an admin opens the group detail page. Treat group names as immutable once a grant exists.
+- Deleting a user in Entra deactivates them in Databricks but does not revoke their personal access tokens. Token revocation is an explicit offboarding step.
+- AIM does not support cross-tenant Entra directories. External collaborators need a different path; do not assume B2B guests sync.
 
 ## Checklist
 
 - [ ] Every grant maps to a row in the access matrix
+- [ ] Every grant exists in Terraform state; UC system tables show no grants issued outside CI identities
 - [ ] No consuming service has any Bronze or Silver grant
 - [ ] All grants are on groups, not users
 - [ ] Production WRITE is held only by pipeline service principals
+- [ ] AIM is enabled; no SCIM connector exists in the Entra tenant for Databricks
+- [ ] Every granted group is Entra-synced with membership managed in Entra
+
+## Sources
+
+- Azure Databricks: [Automatic identity management](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/automatic-identity-management/)
+- Azure Databricks: [Sync users and groups from Microsoft Entra ID using SCIM](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/scim/)
+- Azure Databricks: [Service principals](https://learn.microsoft.com/en-us/azure/databricks/admin/users-groups/service-principals)

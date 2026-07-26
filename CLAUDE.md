@@ -27,7 +27,7 @@ docs/
     naming-conventions.md        Case styles, name patterns, standard tokens
     metadata-and-comments.md     UC COMMENTs, commit messages, docstrings
     secrets-and-credentials.md   (stub)
-    service-principal-auth.md    (stub)
+    service-principal-auth.md    SP types, standard identities, auth ranking, lifecycle
   governance/                    Access and usage policy
     access-model.md              Authoritative home of the access matrix
     responsible-use.md           (stub)
@@ -58,6 +58,7 @@ Rules that apply across these docs:
 - **Spec before build.** Platform work starts from a spec: requirements, data contracts, acceptance criteria, and validation plan. See `docs/practices/spec-driven-development.md`.
 - **Least privilege by default.** Access is requested per role and per layer, not granted broadly. Downstream consumers never get Bronze or Silver access (see medallion rules below).
 - **Everything is named by convention.** Catalogs, schemas, jobs, and pipelines follow the naming conventions doc. No ad hoc names in examples or templates.
+- **Everything is configuration-as-code.** Workspace, catalog, schema, and permission configuration lives in repos and deploys via Terraform or bundles. A UI-made change to any of these is a defect; the repo is the change record.
 - **No secrets in code or docs.** Credentials go through secret scopes or service principal auth. Docs must never contain real hostnames, tokens, or workspace IDs.
 - **Cost is governed.** Compute examples in docs must reflect the compute policies: right-sized SKUs, auto-termination, tagging for attribution.
 

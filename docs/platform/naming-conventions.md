@@ -88,12 +88,12 @@ Pattern: `<abbrev>-<workload>-<env>-<region>-<instance>`, using Cloud Adoption F
 
 Standard tokens, defined once:
 
-- Environments (catalogs, bundle targets): `dev`, `qa`, `test`, `prod`
+- Environments (catalogs, bundle targets): `dev`, `nonprod`, `prod`
 - Workspace tiers (Azure resources, workspaces): `np` (nonprod), `prod`
 - Regions: `wus` (West US); add tokens as regions are added
 - Instance: `001`, incremented only when a second instance exists
 
-Azure resources scope to tier, not environment: one nonprod workspace hosts `dev`, `qa`, and `test` (see [Environments](environments.md)).
+Azure resources scope to tier, not environment: one nonprod-tier workspace hosts the `dev` and `nonprod` environments (see [Environments](environments.md)).
 
 | Resource | Abbrev | Constraint that matters | Example |
 | --- | --- | --- | --- |

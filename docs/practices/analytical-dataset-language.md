@@ -5,17 +5,17 @@
 
 ## Purpose
 
-A shared analytical dataset language gives every domain — Sales, Finance, HR, Marketing, Operations — a common structural contract so their datasets can be queried, compared, and forecasted with identical patterns, without translation.
+A shared analytical dataset language gives every domain (Sales, Finance, HR, Marketing, Operations) a common structural contract so their datasets can be queried, compared, and forecasted with identical patterns, without translation.
 
 This document defines five elements that compose that contract:
 
-- **Period** — the time axis every fact table attaches to
-- **Grain** — the row-level contract that must be declared before anything else
-- **Dimensions** — the context axes used for filtering and grouping
-- **Measures** — the raw numeric facts stored at the declared grain
-- **Metrics** — the governed business calculations built on top of measures
+- **Period**: the time axis every fact table attaches to
+- **Grain**: the row-level contract that must be declared before anything else
+- **Dimensions**: the context axes used for filtering and grouping
+- **Measures**: the raw numeric facts stored at the declared grain
+- **Metrics**: the governed business calculations built on top of measures
 
-> **Falsified if:** a dataset cannot be pivoted — rows to columns across a period with measures at the intersection — the structure is broken. Fix the structure before building anything on top of it.
+> **Falsified if:** a dataset cannot be pivoted (rows to columns across a period, measures at the intersection), the structure is broken. Fix the structure before building anything on top of it.
 
 ---
 
@@ -23,7 +23,7 @@ This document defines five elements that compose that contract:
 
 ### 1. Period
 
-> Period is the time axis. It is not just a date column — it is a first-class dimension with a declared grain and a hierarchy. Every fact table must attach to a period. No exceptions.
+> Period is the time axis. It is not just a date column. It is a first-class dimension with a declared grain and a hierarchy. Every fact table must attach to a period. No exceptions.
 
 **Period grain options (from atomic to aggregate):**
 
@@ -49,7 +49,7 @@ Day → Calendar Week → Calendar Month → Calendar Quarter → Calendar Year
 - Period grain must be declared before identifying any dimension or measure. The grain is the contract.
 - Store the atomic grain. Aggregation is cheap at query time; re-atomizing is expensive or impossible.
 - Every fact table gets at least one `period_key`. Some get multiple (e.g., order date + ship date + return date).
-- Period is a conformed dimension — its keys, attributes, and hierarchy must be identical across every domain that uses it.
+- Period is a conformed dimension: its keys, attributes, and hierarchy must be identical across every domain that uses it.
 
 **Period table (representative columns):**
 
@@ -76,7 +76,7 @@ period (
 
 ### 2. Grain
 
-Grain is the single most consequential decision in any dimensional design. It defines exactly what one row in a fact table represents. Everything else — which dimensions attach, which measures are valid, how aggregation behaves — flows from the grain declaration.
+Grain is the most consequential decision in dimensional design. It defines what one row in a fact table represents. Everything else flows from the grain declaration: which dimensions attach, which measures are valid, how aggregation behaves.
 
 > **Grain is a contract, not a preference.** Once declared, it cannot be violated without creating silent errors. Mixed grain in a single fact table is the most common source of double-counting in production BI systems.
 
@@ -99,7 +99,7 @@ Grain is the single most consequential decision in any dimensional design. It de
 | **Periodic Snapshot** | One row per entity per period, regardless of activity | The period closes | Semi-additive balances and counts |
 | **Accumulating Snapshot** | One row per entity lifecycle, updated as milestones pass | Entity created; updated at each milestone | Lag times, completion flags, pipeline stage |
 
-**Transaction grain** — most dimensional and most expressive. Maximum slicing and dicing. Rows exist only when something happens, so the table is often sparse.
+**Transaction grain:** most dimensional and most expressive. Maximum slicing and dicing. Rows exist only when something happens, so the table is often sparse.
 
 ```
 Example: sales_orders
@@ -107,7 +107,7 @@ Grain: one row per order line per day
 A row exists only when a line item is ordered.
 ```
 
-**Periodic snapshot grain** — rows are inserted even when no activity occurs. This is what makes trend analysis clean — you always have a value for every period, even if it is zero or unchanged.
+**Periodic snapshot grain:** rows are inserted even when no activity occurs. This keeps trend analysis clean: every period has a value, even if it is zero or unchanged.
 
 ```
 Example: inventory_snapshot
@@ -116,7 +116,7 @@ A row exists for every product-location combination every day,
 whether or not any inventory movement occurred.
 ```
 
-**Accumulating snapshot grain** — one row per entity (order, claim, application, patient episode) that is updated as milestones are reached. Multiple date foreign keys, one per milestone. Measures include lag times between milestones.
+**Accumulating snapshot grain:** one row per entity (order, claim, application, patient episode), updated as milestones are reached. Multiple date foreign keys, one per milestone. Measures include lag times between milestones.
 
 ```
 Example: order_fulfillment_pipeline
@@ -173,7 +173,7 @@ course       → Education
 incident     → Operations / IT
 ```
 
-**Dimension hierarchy example — Location:**
+**Dimension hierarchy example, Location:**
 
 ```
 Building → Site → City → Region → Country → Global
@@ -221,7 +221,7 @@ Measures are the numeric facts at the intersection of dimensions and period. The
 
 ### 5. Metrics
 
-A metric is not a measure. This distinction matters operationally and is the line where most semantic layer implementations break down.
+A metric is not a measure. This distinction is where most semantic layer implementations break down.
 
 > **Measure:** a raw stored fact in a fact table. Additive, semi-additive, or non-additive. Lives in the physical data layer.
 >
@@ -258,7 +258,7 @@ A measure can be summed. A metric may require a specific aggregation path that i
 | **Flow** | Change in a stock over a period | New ARR, churned ARR, net headcount change |
 | **Composite** | Multi-step formula combining multiple sources | LTV = ARPU × (1 / churn_rate); NRR = (Expansion + Renewal - Churn) / Prior ARR |
 
-**Cross-domain metric example — Customer Acquisition Cost (CAC):**
+**Cross-domain metric example, Customer Acquisition Cost (CAC):**
 
 CAC spans two domains (Marketing and Sales) and cannot be defined from either domain alone.
 
@@ -284,7 +284,7 @@ This metric requires a drill-across join. It is not computable from a single fac
 - Metrics reference measures, not other metrics, to avoid cascading definition failures. A composite formula written with metric names (LTV = ARPU × 1 / churn_rate) is shorthand: the governed definition expands each input to its component measures, so no metric depends on another metric's definition at query time.
 - Every metric carries its grain. A metric defined at monthly grain cannot be queried at daily grain without an explicit restatement of the definition.
 - Metric definitions are versioned. When a definition changes (fiscal calendar shift, inclusion rule change), prior periods must be recomputed or the version boundary documented.
-- Non-additive metrics must declare how they aggregate across dimensions. `Conversion rate` aggregated across channels is not the average of channel conversion rates — it is total conversions / total clicks across channels.
+- Non-additive metrics must declare how they aggregate across dimensions. `Conversion rate` aggregated across channels is not the average of channel conversion rates: it is total conversions / total clicks across channels.
 - Derived metrics (rates, ratios, composites) must expose their numerator and denominator as separate queryable measures so consumers can verify the computation.
 
 **Metric layer in the lakehouse stack:**
@@ -302,7 +302,7 @@ Presentation      →  BI tools, dashboards, notebooks query Gold metrics,
 
 On this platform, metrics are implemented as Unity Catalog metric views: the definition (dimensions, measures, filters, comments) lives in YAML on a governed UC object, aggregation happens at query time via `MEASURE()`, and Genie and AI/BI dashboards consume the same definition. See [Genie and metric views](genie-and-metric-views.md).
 
-**Pivoting metrics:** Metrics that are additive or derived from additive components pivot cleanly. Rate and composite metrics do not pivot directly — they must be computed from their component measures at each pivot grain. Document this on every non-additive metric definition. Consumers will try to pivot them and get wrong numbers if they are not warned.
+**Pivoting metrics:** Metrics that are additive or derived from additive components pivot cleanly. Rate and composite metrics do not pivot directly. They must be computed from their component measures at each pivot grain. Document this on every non-additive metric definition.
 
 ---
 
@@ -348,7 +348,7 @@ marketing_spend         |   ✓    |        |    ✓    |    ✓     |  ✓  |  
 support_tickets         |   ✓    |   ✓    |    ✓    |          |  ✓  |    ✓    |
 ```
 
-Every row is a separate dataset with its own grain. Conformed dimensions (columns) are physically shared — same surrogate keys, same attribute definitions.
+Every row is a separate dataset with its own grain. Conformed dimensions (columns) are physically shared: same surrogate keys, same attribute definitions.
 
 ---
 
@@ -366,7 +366,7 @@ Every row is a separate dataset with its own grain. Conformed dimensions (column
 | `list_price_usd` | Additive | List price at time of order |
 | `discount_usd` | Additive | Discount applied |
 | `order_count` | Additive | Count of distinct orders (degenerate key pattern) |
-| `fill_rate_pct` | Non-additive | `shipped_quantity / ordered_quantity` — compute at query time |
+| `fill_rate_pct` | Non-additive | `shipped_quantity / ordered_quantity`. Compute at query time |
 
 **Pivotable queries:**
 
@@ -388,7 +388,7 @@ GROUP BY p.product_name;
 
 ### Domain 2: Inventory Snapshot (grain: product-location per day)
 
-**Grain declaration:** One row per product per location per calendar day. This is a periodic snapshot — rows are inserted even when no activity occurs.
+**Grain declaration:** One row per product per location per calendar day. This is a periodic snapshot: rows are inserted even when no activity occurs.
 
 **Measures:**
 
@@ -396,7 +396,7 @@ GROUP BY p.product_name;
 |---|---|---|
 | `on_hand_units` | Semi-additive | Sum across products/locations; average across time |
 | `on_order_units` | Semi-additive | Units in open POs |
-| `days_of_supply` | Non-additive | `on_hand / avg_daily_demand` — compute at query time |
+| `days_of_supply` | Non-additive | `on_hand / avg_daily_demand`. Compute at query time |
 | `stockout_flag` | Additive (as count) | 1 if on_hand = 0, else 0 |
 
 **Pivotable queries:**
@@ -430,7 +430,7 @@ GROUP BY l.site_name;
 | `budget_amount_usd` | Additive | From budget load, same grain |
 | `variance_amount_usd` | Additive | actual - budget (components additive, store both) |
 
-**Cross-domain join example — Sales + Finance:**
+**Cross-domain join example, Sales + Finance:**
 
 ```sql
 -- Revenue (Sales domain) vs. Recognized Revenue (Finance domain) by org, by month
@@ -449,7 +449,7 @@ GROUP BY o.org_name, pr.calendar_month
 ORDER BY o.org_name, pr.calendar_month;
 ```
 
-This query works because `org` and `period` are conformed — the same keys join both datasets without transformation.
+This query works because `org` and `period` are conformed: the same keys join both datasets without transformation.
 
 ---
 
@@ -481,8 +481,8 @@ This query works because `org` and `period` are conformed — the same keys join
 | `impressions` | Additive | |
 | `clicks` | Additive | |
 | `conversions` | Additive | |
-| `cpc_usd` | Non-additive | `spend / clicks` — compute at query time |
-| `conversion_rate_pct` | Non-additive | `conversions / clicks` — compute at query time |
+| `cpc_usd` | Non-additive | `spend / clicks`. Compute at query time |
+| `conversion_rate_pct` | Non-additive | `conversions / clicks`. Compute at query time |
 
 ---
 
@@ -509,7 +509,7 @@ GROUP BY c.channel_name, pr.calendar_month;
 
 ### Pattern 2: Period-over-Period Comparison
 
-Because period is conformed and hierarchical, YoY, MoM, and QoQ comparisons are structural — not special-case logic.
+Because period is conformed and hierarchical, YoY, MoM, and QoQ comparisons are structural, not special-case logic.
 
 ```sql
 -- YoY revenue by product
@@ -604,7 +604,7 @@ Before publishing any dataset to the analytical layer, verify:
 - [ ] No two measures in the dataset imply different grains
 - [ ] Every row has exactly one `period_key` (minimum); additional date keys named and documented
 - [ ] All dimension foreign keys resolve to conformed dimension tables with matching surrogate keys
-- [ ] All measures are at the declared grain — no implicit roll-ups stored
+- [ ] All measures are at the declared grain: no implicit roll-ups stored
 - [ ] Non-additive measures are documented as such; components (numerator, denominator) are stored separately
 - [ ] Semi-additive measures are labeled with the correct aggregation behavior for the time axis
 - [ ] The dataset can be pivoted: entity rows × period columns × one additive measure = valid result

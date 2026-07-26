@@ -13,7 +13,7 @@ It is written for humans and agents. Agents such as Claude Code and Databricks G
 ## Sections
 
 - [Onboarding](onboarding/index.md) - role-based entry paths for new team members
-- [Practices](practices/index.md) - design and delivery standards: medallion architecture, dataset contracts, BI standards, tidy data, spec-driven development
+- [Practices](practices/index.md) - design and delivery standards: medallion architecture, dataset contracts, BI standards, metric views and Genie, tidy data, spec-driven development
 - [Platform](platform/index.md) - infrastructure reference: Azure footprint, environments, compute, naming, secrets, CI/CD
 - [Governance](governance/index.md) - access model and responsible use
 

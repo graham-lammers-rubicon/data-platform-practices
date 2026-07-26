@@ -6,7 +6,7 @@
 
 ## What It Is
 
-Tidy data is a standard way to structure tabular datasets so that manipulation, modeling, and visualization require minimal reshaping. The structure links physical layout to semantics: the shape of the table directly reflects what the data means.
+Tidy data is a standard way to structure tabular datasets so that manipulation, modeling, and visualization require minimal reshaping. The structure links physical layout to semantics: the shape of the table reflects what the data means.
 
 The framework was formalized by Hadley Wickham in 2014 and underpins the R tidyverse ecosystem. The same principles apply in Python (pandas), SQL, and any columnar data store.
 
@@ -20,7 +20,7 @@ The framework was formalized by Hadley Wickham in 2014 and underpins the R tidyv
 | Each observation is a row | One and only one observation per row |
 | Each type of observational unit is its own table | Don't mix granularities in a single table |
 
-Violating any of these rules creates friction: you have to reshape the data before you can compute on it.
+Violating any of these rules creates friction: you must reshape the data before you can compute on it.
 
 ---
 
@@ -134,7 +134,7 @@ Tidy structure is not just a coding convention. It is a contract between data pr
 
 - Tidy is not always optimal for storage. Wide sparse tables use less space in row stores; tidy long tables are better for column stores.
 - Performance is context-dependent. Benchmark before assuming tidy is faster.
-- "What counts as a variable" is genuinely ambiguous in some domains. The definition of observation shifts depending on analysis goals.
+- "What counts as a variable" is ambiguous in some domains. The definition of observation shifts with analysis goals.
 - Tidy data is a standard for analysis, not a replacement for normalization. Production databases often need proper 3NF with foreign keys.
 - Tidy tools create a closed ecosystem. Tools built for tidy data do not automatically support other valid data structures.
 

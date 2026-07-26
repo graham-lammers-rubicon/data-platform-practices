@@ -22,8 +22,8 @@ Every UC object carries a COMMENT. `COMMENT ON` supports catalogs, schemas, tabl
 
 Rules:
 
-- COMMENTs are queryable: `INFORMATION_SCHEMA.TABLES.COMMENT`, `INFORMATION_SCHEMA.COLUMNS.COMMENT`. Humans and agents discover the landscape through them, not tribal knowledge; an uncommented object is invisible to both.
-- COMMENTs live in source: DDL and pipeline definitions in repos, deployed with the object. A COMMENT set ad hoc in the workspace is not in source control and drifts from the deployed definition.
+- COMMENTs are queryable: `INFORMATION_SCHEMA.TABLES.COMMENT`, `INFORMATION_SCHEMA.COLUMNS.COMMENT`. An uncommented object is invisible to humans and agents.
+- COMMENTs live in source: DDL and pipeline definitions in repos, deployed with the object. A COMMENT set ad hoc in the workspace drifts from the deployed definition.
 
 ## Commit messages
 

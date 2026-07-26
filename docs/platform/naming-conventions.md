@@ -11,9 +11,9 @@ Defines naming standards for every named resource on the platform. Nothing is na
 
 ## Names carry meaning
 
-Names are read far more often than written, by humans and by agents. Unity Catalog metadata is the primary map an agent has of the data landscape; a name that does not inform misleads both.
+Unity Catalog metadata is the primary map humans and agents have of the data landscape; a name that does not inform misleads both.
 
-- Full words: `customer_acquisition_cost`, not `cust_acq_cst`. Brief and semantic, never cryptic. Casual abbreviations do not inform.
+- Full words: `customer_acquisition_cost`, not `cust_acq_cst`. Brief and semantic, never cryptic.
 - Abbreviate only where a platform limit forces it (the Azure 24-character types: `dbx`, `np`, `[region]`). UC names have a 255-character limit; spell them out.
 - Industry-standard abbreviations only: `id`, `qty`, `pct`.
 - A name states what a thing is; the COMMENT states what it means. See [Metadata and comments](metadata-and-comments.md).
@@ -114,6 +114,7 @@ Rules:
 
 - Storage accounts and key vaults have 24-character global limits. The token set fits with a region token of four characters or fewer; re-check the budget for the chosen region token and before lengthening any other token.
 - Names are assigned in infrastructure code (see [Azure infrastructure](azure-infrastructure.md)). A portal-created resource with an ad hoc name is two defects, not one.
+- The network patterns (`vnet`, `snet`) apply only to a VNet-injected fallback workspace; standard workspaces are serverless and have no customer VNet. `pep` also names NCC private endpoints to protected resources.
 
 ## Identity
 
@@ -121,7 +122,7 @@ Rules:
 | --- | --- | --- |
 | Pipeline service principal | `sp-<domain>-pipeline-<env>` | `sp-sales-pipeline-prod` |
 | Cross-domain Gold job service principal | `sp-<subject>-gold-<env>` | `sp-cac-gold-prod` |
-| Deployment service principal | `sp-dbx-deploy-<env>` | `sp-dbx-deploy-prod` |
+| Deployment service principal | `sp-dbx-deploy-<tier>` | `sp-dbx-deploy-np`, `sp-dbx-deploy-prod` |
 | App service principal | `sp-<app>-<env>` | `sp-salesapi-prod` |
 | Entra / UC group | `grp-<role>-<scope>-<env>` | `grp-analysts-gold-prod`, `grp-dataeng-silver-dev` |
 

@@ -39,7 +39,7 @@ The access matrix is authoritatively defined in the [Access model](../governance
 ---
 ---
 
-# 🥉 Bronze — Capture Everything, Transform Nothing
+# 🥉 Bronze: Capture Everything, Transform Nothing
 
 > **Land the data exactly as it arrived. Touch nothing.**
 
@@ -112,7 +112,7 @@ FROM STREAM read_files(
 ---
 ---
 
-# 🥈 Silver — Validate, Clean, Conform
+# 🥈 Silver: Validate, Clean, Conform
 
 > **Silver is where raw data earns the right to be trusted.** Nothing leaves without being typed, deduplicated, and quality-checked. Never write to Silver directly from source; bypassing Bronze loses the audit trail and the ability to reprocess.
 
@@ -124,7 +124,7 @@ Cast types. Handle nulls. Deduplicate. Apply conformed keys. Declare quality exp
 | Periodic snapshot | Materialized view | One row per entity-period, recomputed as periods close |
 | Accumulating snapshot | AUTO CDC flow (SCD1) | Row updated as milestones complete |
 
-**Pattern — transaction grain:**
+**Pattern: transaction grain:**
 ```sql
 CREATE OR REFRESH STREAMING TABLE silver.orders (
   CONSTRAINT valid_revenue     EXPECT (revenue_usd >= 0)        ON VIOLATION DROP ROW,
@@ -152,7 +152,7 @@ Bronze holds the append-only change events. Silver derives the versioned entity 
 - The Bronze event table is the history. Nothing is lost when Silver is rebuilt; a full refresh replays the events and reproduces every version.
 - Applying changes is a transformation: AUTO CDC sequences events, applies deletes, and drops columns. That work belongs in Silver, not in the layer whose contract is "transform nothing." An SCD2 table is also updated in place (end-dating), which breaks Bronze's append-only rule.
 
-**Pattern — SCD2 via AUTO CDC (current syntax; `APPLY CHANGES INTO` and `LIVE.` are legacy):**
+**Pattern: SCD2 via AUTO CDC (current syntax; `APPLY CHANGES INTO` and `LIVE.` are legacy):**
 ```sql
 CREATE OR REFRESH STREAMING TABLE silver.customer
 COMMENT 'Customer entity with full SCD2 history. Grain: one row per customer per version. Rebuildable from bronze.customer.';
@@ -195,7 +195,7 @@ orders (
 ---
 ---
 
-# 🥇 Gold — Govern, Enrich, Serve
+# 🥇 Gold: Govern, Enrich, Serve
 
 > **Gold is the governed semantic layer: the single trusted source for analytics, vector stores, GenAI retrieval, REST APIs, and MCP servers. Every object has an owner, a definition, and a version.**
 
@@ -223,7 +223,7 @@ TBLPROPERTIES (
 )
 ```
 
-**Pattern — materialized view:**
+**Pattern: materialized view:**
 ```sql
 CREATE OR REFRESH MATERIALIZED VIEW gold.sales_product_monthly
 COMMENT 'Monthly sales by product. Grain: one row per product per calendar month. Owner: RevOps. v1 2025-01-01.'
@@ -242,7 +242,7 @@ JOIN silver.period pr ON pr.calendar_date = s.order_date
 GROUP BY s.product_sku, pr.calendar_year, pr.calendar_month;
 ```
 
-**Pattern — cross-domain join (define once, not per consumer):**
+**Pattern: cross-domain join (define once, not per consumer):**
 ```sql
 CREATE OR REFRESH MATERIALIZED VIEW gold.customer_acquisition_cost
 COMMENT 'CAC by channel per month. Grain: one row per channel per calendar month. Owner: RevOps.'

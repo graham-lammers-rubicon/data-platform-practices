@@ -67,7 +67,7 @@ These indicators are how the primary measure in 1.2 gets observed. A platform th
 
 The most valuable thing the platform produces is not a dashboard. It is agreed meaning: what a customer is, what counts as revenue, when a renewal is a renewal, which timestamp governs. Infrastructure moves data. The semantic layer is what makes the data mean something, and meaning must be defined once, owned, and versioned.
 
-Without a governed semantic layer, each report author applies independent interpretations: one filters cancelled transactions, another includes them; one uses invoice dates, another payment dates. Every report is individually defensible and the set is mutually inconsistent. That inconsistency is what kills trust, and trust is what makes a number decision-grade.
+Without a governed semantic layer, each report author applies independent interpretations: one filters cancelled transactions, another includes them; one uses invoice dates, another payment dates. Every report is individually defensible and the set is mutually inconsistent. That inconsistency kills trust, and trust is what makes a number decision-grade.
 
 ### 2.1 Measures vs. metrics
 
@@ -107,7 +107,7 @@ A metric is not defined until its edge cases are. Example: "outstanding receivab
 - [ ] The governing timestamp (invoice, payment, or warehouse arrival)
 - [ ] The threshold where an overdue invoice becomes operationally significant
 
-A metric with unresolved definitional questions must not be certified for decision use. An ambiguous metric on a fast dashboard is a fast way to make a wrong call with confidence.
+A metric with unresolved definitional questions must not be certified for decision use.
 
 ### 2.4 Definition changes are versioned events
 
@@ -169,7 +169,7 @@ Before implementing real-time or near-real-time delivery for a metric, document:
 
 Calibration: fraud alerts need milliseconds, collections runs daily, board metrics move once per period. A per-minute refresh is not justified by weekly action.
 
-Real-time delivery must not be enabled for data with unresolved inconsistencies, duplication, late-arriving events, or incomplete mappings. High refresh frequency on unreliable data is false precision: it makes a shaky number look authoritative, which is worse than a slow number that is right.
+Real-time delivery must not be enabled for data with unresolved inconsistencies, duplication, late-arriving events, or incomplete mappings. High refresh frequency on unreliable data is false precision: it makes a shaky number look authoritative.
 
 ---
 
@@ -198,7 +198,7 @@ Where entity resolution is required (a Customer 360 across sales, billing, suppo
 
 ## 8. Self-Service Is Controlled Freedom
 
-Self-service reduces dependence on centralized BI teams for routine exploration. Ungoverned self-service replaces one reporting bottleneck with many inconsistent reports, and the inconsistency lands in the same meetings the platform was supposed to fix. The standard is controlled freedom: users explore certified data without rebuilding business logic.
+Self-service reduces dependence on centralized BI teams for routine exploration. Ungoverned self-service replaces one reporting bottleneck with many inconsistent reports. The standard is controlled freedom: users explore certified data without rebuilding business logic.
 
 Self-service environments must separate three layers:
 
@@ -277,7 +277,7 @@ As more operational systems connect to centralized analytics and data movement g
 - **False precision.** Real-time refresh on unreconciled data makes wrong numbers look authoritative. Latency must follow decision cadence, not technical capability.
 - **Overwritten history.** Current attribute values applied to prior periods make executive and regulatory numbers indefensible. There is no retroactive fix; the history is gone.
 - **Raw-table self-service.** It demos well and decays into distributed data engineering with no standards, surfacing as KPI disagreements months later.
-- **Context-free anomaly alerts.** They train users to ignore alerts, which defeats the reason for having them.
+- **Context-free anomaly alerts.** They train users to ignore alerts.
 
 ## Acceptance checklist
 

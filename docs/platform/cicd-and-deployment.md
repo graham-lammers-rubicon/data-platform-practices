@@ -28,7 +28,7 @@ Rules:
 - CI uses the `databricks/setup-cli` action pinned to a version; deploys are `databricks bundle deploy -t <target>`.
 - `nonprod` and `prod` targets use `mode: production` with `run_as` the deployment service principal and an explicit `permissions` block so engineers can view runs they do not own.
 - `prod` is a GitHub environment with required reviewers and a deployment branch policy allowing `main` only. Approval is recorded in GitHub, not in chat.
-- One concurrency group per target: parallel deploys to the same target race and are blocked.
+- One concurrency group per target; parallel deploys to the same target are blocked.
 - Developers deploy to `dev` directly (`bundle deploy -t dev`, `mode: development`); dev is the only target a human deploys.
 - Acceptance criteria come from the spec (see [Spec-driven development](../practices/spec-driven-development.md)); a deploy without a validation step is incomplete.
 
@@ -41,7 +41,7 @@ Rules:
 
 ## Rollback and hotfix
 
-- Bundles are declarative: rollback is redeploying the previous known-good SHA through the same pipeline. There is no manual rollback path.
+- Rollback is redeploying the previous known-good SHA through the same pipeline. There is no manual rollback path.
 - Hotfix: branch from `main`, PR with expedited review, same pipeline. Editing a deployed asset in the workspace is never the fix.
 
 ## Sharp edges

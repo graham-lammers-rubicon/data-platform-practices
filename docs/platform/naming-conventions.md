@@ -77,23 +77,26 @@ Pattern: `<abbrev>-<workload>-<env>-<region>-<instance>`, using Cloud Adoption F
 
 Standard tokens, defined once:
 
-- Environments: `dev`, `stg`, `prd`
+- Environments (catalogs, bundle targets): `dev`, `qa`, `test`, `prd`
+- Workspace tiers (Azure resources, workspaces): `np` (nonprod), `prd`
 - Regions: `eus2` (East US 2); add tokens as regions are added
 - Instance: `001`, incremented only when a second instance exists
 
+Azure resources scope to tier, not environment: one nonprod workspace hosts `dev`, `qa`, and `test` (see [Environments](environments.md)).
+
 | Resource | Abbrev | Constraint that matters | Example |
 | --- | --- | --- | --- |
-| Resource group | `rg` | 1-90 chars | `rg-dataplat-dev-eus2-001` |
-| Databricks workspace | `dbw` | 3-64, alphanumerics, underscores, hyphens | `dbw-dataplat-dev-eus2-001` |
-| Databricks access connector | `dbac` | | `dbac-dataplat-dev-eus2-001` |
-| Storage account | `st` | 3-24, lowercase alphanumeric only, globally unique | `stdataplatdeveus2001` |
+| Resource group | `rg` | 1-90 chars | `rg-dataplat-np-eus2-001` |
+| Databricks workspace | `dbw` | 3-64, alphanumerics, underscores, hyphens | `dbw-dataplat-np-eus2-001` |
+| Databricks access connector | `dbac` | | `dbac-dataplat-np-eus2-001` |
+| Storage account | `st` | 3-24, lowercase alphanumeric only, globally unique | `stdataplatnpeus2001` |
 | ADLS container | none | 3-63, lowercase, numbers, hyphens | `bronze-landing`, `uc-managed` |
-| Key vault | `kv` | 3-24, alphanumerics and hyphens, globally unique | `kv-dataplat-dev-eus2-001` |
-| Virtual network | `vnet` | 2-64 | `vnet-dataplat-dev-eus2-001` |
+| Key vault | `kv` | 3-24, alphanumerics and hyphens, globally unique | `kv-dataplat-np-eus2-001` |
+| Virtual network | `vnet` | 2-64 | `vnet-dataplat-np-eus2-001` |
 | Subnet | `snet` | | `snet-dbw-private-001` |
-| Private endpoint | `pep` | | `pep-stdataplatdeveus2001-blob` |
-| Log Analytics workspace | `log` | | `log-dataplat-dev-eus2-001` |
-| Managed identity | `id` | | `id-dataplat-deploy-dev-001` |
+| Private endpoint | `pep` | | `pep-stdataplatnpeus2001-blob` |
+| Log Analytics workspace | `log` | | `log-dataplat-np-eus2-001` |
+| Managed identity | `id` | | `id-dataplat-deploy-np-001` |
 
 Rules:
 

@@ -20,14 +20,14 @@ Two tiers, one region, one resource group per tier.
 
 | Resource | Nonprod | Prod |
 | --- | --- | --- |
-| Resource group | `rg-dbx-np-[region]-001` | `rg-dbx-prod-[region]-001` |
-| Databricks workspace (serverless) | `dbw-dbx-np-[region]-001` | `dbw-dbx-prod-[region]-001` |
-| Storage (ADLS Gen2, UC managed storage) | `stdbxnp[region]001` | `stdbxprod[region]001` |
-| Access connector | `dbac-dbx-np-[region]-001` | `dbac-dbx-prod-[region]-001` |
-| Platform key vault | `kv-dbx-np-[region]-001` | `kv-dbx-prod-[region]-001` |
-| Log Analytics | `log-dbx-np-[region]-001` | `log-dbx-prod-[region]-001` |
+| Resource group | `[subject]-dbx-rg-[region]-nonprod` | `[subject]-dbx-rg-[region]-prod` |
+| Databricks workspace (serverless) | `[subject]-dbx-workspace-[region]-nonprod` | `[subject]-dbx-workspace-[region]-prod` |
+| Storage (ADLS Gen2, UC managed storage) | `[subject]dbxst[region]np` | `[subject]dbxst[region]prod` |
+| Access connector | `[subject]-dbx-connector-[region]-nonprod` | `[subject]-dbx-connector-[region]-prod` |
+| Platform key vault | `[subject]-dbx-vault-[region]-np` | `[subject]-dbx-vault-[region]-prod` |
+| Log Analytics | `[subject]-dbx-log-[region]-nonprod` | `[subject]-dbx-log-[region]-prod` |
 
-Domain secret vaults (`kv-<domain>-<env>-[region]-001`) are created per secret scope as domains onboard ([Secrets and credentials](secrets-and-credentials.md)).
+Names follow the suffix pattern `[subject]-[scope]-<type>-[region]-<env>`: no instance counters, environment last ([Naming conventions](naming-conventions.md)). Domain secret vaults (`[subject]-<domain>-vault-[region]-<env>`) are created per secret scope as domains onboard ([Secrets and credentials](secrets-and-credentials.md)).
 
 ## Serverless workspaces
 
@@ -80,7 +80,7 @@ This doc is deliberately a shell on enterprise-network and landing-zone topics. 
 | Serverless egress control | Serverless compute has unrestricted outbound by default. Do we adopt Databricks account-level network policies to restrict egress, and to what allowlist? | TBD |
 | Subscription topology | One shared subscription with tier resource groups, or prod/nonprod subscription separation under a management group? Blast radius and Azure Policy inheritance follow from this. | TBD |
 | Azure Policy baseline | Which policies are assigned (required tags, allowed regions, public-network-access deny, diagnostic settings deployment)? | TBD |
-| Log Analytics wiring | Which diagnostic settings feed `log-dbx-*`, what retention, what minimum alert set? Today the workspace is named but unused. | TBD |
+| Log Analytics wiring | Which diagnostic settings feed the `[subject]-dbx-log-*` workspaces, what retention, what minimum alert set? Today the workspace is named but unused. | TBD |
 | BCDR | Redundancy tiers and recovery: decision register in [Resilience](resilience.md). | TBD |
 
 ## Sharp edges

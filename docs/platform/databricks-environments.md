@@ -15,8 +15,8 @@ Two workspace tiers. Environments are catalogs and bundle targets, not workspace
 
 | Tier | Workspace | Environments (catalogs) |
 | --- | --- | --- |
-| Prod | `dbw-dbx-prod-[region]-001` | `prod_catalog` |
-| Nonprod | `dbw-dbx-np-[region]-001` | `dev_catalog`, `nonprod_catalog` |
+| Prod | `[subject]-dbx-workspace-[region]-prod` | `prod_catalog` |
+| Nonprod | `[subject]-dbx-workspace-[region]-nonprod` | `dev_catalog`, `nonprod_catalog` |
 
 All catalogs share the regional Unity Catalog metastore. Workspace-catalog bindings enforce the tier boundary (below). Tokens: [Naming conventions](naming-conventions.md).
 

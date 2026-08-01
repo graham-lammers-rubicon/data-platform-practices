@@ -85,38 +85,42 @@ Rules:
 
 ## Azure resources
 
-Pattern: `<abbrev>-<workload>-<env>-<region>-<instance>`, using Cloud Adoption Framework abbreviations. Workload for this platform: `dbx`.
+Pattern: `[subject]-[scope]-<type>[-<purpose>]-[region]-<env>`. Suffix-based: the environment is always the last token, and subject and scope lead, so related resources sort together in any listing and the same resource differs across environments only at the tail.
 
 Standard tokens, defined once:
 
-- Environments (catalogs, bundle targets): `dev`, `nonprod`, `prod`
-- Workspace tiers (Azure resources, workspaces): `np` (nonprod), `prod`
+- `[subject]`: the business subject or product line that owns the resource. Set the real token in Terraform and register it here before first use; docs use the placeholder.
+- `[scope]`: the workload within the subject. This platform's core infrastructure: `dbx`. Domain-scoped resources (domain secret vaults) use the domain token as scope.
+- `<type>`: readable resource-type token from the table below. Full words where limits allow (`workspace`, `vault`, `log`); abbreviate only where a length limit forces it (`st`).
+- Environments (catalogs, bundle targets): `dev`, `nonprod`, `prod`. Workspace tiers: `nonprod`, `prod`, spelled out; abbreviate to `np` only where a length limit forces it.
 - Region: examples in this repo use the `[region]` placeholder. Set the real CAF region token in Terraform and register it here before first use; do not hardcode a region in docs.
-- Instance: `001`, incremented only when a second instance exists
+- No arbitrary instance counters. `001` on a singleton is noise. Append a two-digit series suffix only when an intentional series of the same entity exists, and register the series here.
 
 Azure resources scope to tier, not environment: one nonprod-tier workspace hosts the `dev` and `nonprod` environments (see [Environments](databricks-environments.md)).
 
-| Resource | Abbrev | Constraint that matters | Example |
+| Resource | Type token | Constraint that matters | Example |
 | --- | --- | --- | --- |
-| Resource group | `rg` | 1-90 chars | `rg-dbx-np-[region]-001` |
-| Databricks workspace | `dbw` | 3-64, alphanumerics, underscores, hyphens | `dbw-dbx-np-[region]-001` |
-| Databricks access connector | `dbac` | | `dbac-dbx-np-[region]-001` |
-| Storage account | `st` | 3-24, lowercase alphanumeric only, globally unique | `stdbxnp[region]001` |
+| Resource group | `rg` | 1-90 chars | `[subject]-dbx-rg-[region]-nonprod` |
+| Databricks workspace | `workspace` | 3-64, alphanumerics, underscores, hyphens | `[subject]-dbx-workspace-[region]-nonprod` |
+| Databricks access connector | `connector` | | `[subject]-dbx-connector-[region]-nonprod` |
+| Storage account | `st` | 3-24, lowercase alphanumeric only, globally unique | `[subject]dbxst[region]np` |
 | ADLS container | none | 3-63, lowercase, numbers, hyphens | `bronze-landing`, `uc-managed` |
-| Key vault | `kv` | 3-24, alphanumerics and hyphens, globally unique | `kv-dbx-np-[region]-001` |
-| Virtual network | `vnet` | 2-64 | `vnet-dbx-np-[region]-001` |
-| Subnet | `snet` | | `snet-dbw-private-001` |
-| Private endpoint | `pep` | | `pep-stdbxnp[region]001-blob` |
-| Log Analytics workspace | `log` | | `log-dbx-np-[region]-001` |
-| Managed identity | `id` | | `id-dbx-deploy-np-001` |
+| Key vault | `vault` | 3-24, alphanumerics and hyphens, globally unique | `[subject]-dbx-vault-[region]-np` |
+| Virtual network | `vnet` | 2-64 | `[subject]-dbx-vnet-[region]-nonprod` |
+| Subnet | `snet` | | `[subject]-dbx-snet-host-[region]-nonprod` |
+| Private endpoint | `endpoint` | | `[subject]-dbx-endpoint-storage-blob-[region]-nonprod` |
+| Log Analytics workspace | `log` | | `[subject]-dbx-log-[region]-nonprod` |
 
 Rules:
 
-- Storage accounts and key vaults have 24-character global limits. The token set fits with a region token of four characters or fewer; re-check the budget for the chosen region token and before lengthening any other token.
+- Storage accounts and key vaults have 24-character global limits, which is why their examples abbreviate type and environment (`st`, `np`). Verify the budget for the chosen subject and region tokens before first use; storage accounts also forbid hyphens, so their tokens concatenate bare.
 - Names are assigned in infrastructure code (see [Azure infrastructure](azure-infrastructure.md)). A portal-created resource with an ad hoc name is two defects, not one.
-- The network patterns (`vnet`, `snet`) apply only to a VNet-injected fallback workspace; standard workspaces are serverless and have no customer VNet. `pep` also names NCC private endpoints to protected resources.
+- The network patterns (`vnet`, `snet`) apply only to a VNet-injected fallback workspace; standard workspaces are serverless and have no customer VNet. `endpoint` also names NCC private endpoints to protected resources.
+- Identity objects (service principals, groups, managed identities) are the exception to suffix style: they keep kind prefixes (next section), because identities are found by kind first.
 
 ## Identity
+
+Identity keeps kind prefixes (`sp-`, `grp-`, `id-`), unlike Azure resources: identities are found by kind first, so sorting by prefix is the useful order.
 
 | Object | Pattern | Example |
 | --- | --- | --- |
@@ -125,6 +129,7 @@ Rules:
 | Deployment service principal | `sp-dbx-deploy-<tier>` | `sp-dbx-deploy-np`, `sp-dbx-deploy-prod` |
 | App service principal | `sp-<app>-<env>` | `sp-salesapi-prod` |
 | Entra / UC group | `grp-<role>-<scope>-<env>` | `grp-analysts-gold-prod`, `grp-dataeng-silver-dev` |
+| Managed identity | `id-<scope>-<purpose>-<tier>` | `id-dbx-deploy-np` |
 
 Grants attach to groups, never users (see [Access model](../governance/access-model.md)). Group names encode role and scope so a grant audits from the name alone.
 
@@ -133,12 +138,12 @@ Grants attach to groups, never users (see [Access model](../governance/access-mo
 | Object | Pattern | Example |
 | --- | --- | --- |
 | Secret scope | `<domain>-<env>` | `sales-prod` |
-| Backing key vault | `kv-<domain>-<env>-[region]-001` | `kv-sales-prod-[region]-001` |
+| Backing key vault | `[subject]-<domain>-vault-[region]-<env>` | `[subject]-sales-vault-[region]-prod` |
 | Secret key | `<system>-<credential>` | `salesforce-client-secret` |
 
 Key Vault secret names permit only alphanumerics and hyphens; `kebab-case` is forced. No environment or hostname in key names; the scope carries the environment.
 
-Every secret scope has its own backing vault, 1:1 (see [Secrets and credentials](secrets-and-credentials.md)). The 24-character vault budget breaks on long domain tokens: abbreviate `nonprod` to `np` only where forced, and register any shortened domain token here before first use. The tier vault `kv-dbx-<tier>-[region]-001` holds platform secrets only, never domain scope secrets.
+Every secret scope has its own backing vault, 1:1 (see [Secrets and credentials](secrets-and-credentials.md)). The 24-character vault budget breaks on long domain or subject tokens: abbreviate `nonprod` to `np` only where forced, and register any shortened token here before first use. The platform vault `[subject]-dbx-vault-[region]-<tier>` holds platform secrets only, never domain scope secrets.
 
 ## Tags
 
@@ -162,7 +167,7 @@ Azure stores tag keys as first written; two spellings of one key (`CostCenter`, 
 - Column names with special characters require Delta column mapping and break downstream tools. Stay in `[a-z0-9_]`.
 - A kebab notebook fails at `import` with a syntax error; the fix is a rename that breaks every referencing job path. Decide import-vs-entry-point at creation.
 - Storage account and key vault names are globally unique; a reviewed name can still fail at deploy. Check availability in the infrastructure pipeline, not manually.
-- The 24-character storage budget is consumed by tokens; lengthening `dbx` or adding a token breaks the one resource type that cannot take hyphens.
+- The 24-character storage budget is consumed by tokens; lengthening the subject or scope token, or adding one, breaks the one resource type that cannot take hyphens.
 - Environment in a job or pipeline name means promotion renames it, orphaning run history and breaking references.
 - Renaming a UC table does not update downstream views, dashboards, or retrieval configs. Fix bad names immediately or live with them.
 
@@ -174,6 +179,7 @@ Azure stores tag keys as first written; two spellings of one key (`CostCenter`, 
 - [ ] No environment token in any job, pipeline, or warehouse name
 - [ ] Importable Python files and notebooks are `snake_case`
 - [ ] Every Azure resource name is generated in infrastructure code from the standard tokens
+- [ ] Environment is the final token of every Azure resource name; no instance counters without a registered series
 - [ ] Storage account and key vault names fit the 24-character budget
 - [ ] Every grant-bearing group name encodes role, scope, and environment
 - [ ] Tag keys are `camelCase` and include the baseline set

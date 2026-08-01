@@ -95,7 +95,7 @@ No layer prefixes in table or column names. The schema tells you the layer; the 
 
 - Cast types, deduplicate, handle nulls, apply conformed keys. Declare quality expectations with EXPECT constraints (DROP ROW or FAIL UPDATE). Never write to Silver directly from source.
 - **SCD Type 2 is derived in Silver** via `CREATE FLOW ... AS AUTO CDC INTO ... STORED AS SCD TYPE 2`, reading the Bronze event table. It is rebuildable by replay; a backfill means full-refreshing the Silver target, never re-feeding events into an existing one.
-- Silver is long and atomic: one variable per column, one observation per row, grain declared in the table COMMENT. Unpivot wide source shapes here. Split compound codes into typed columns.
+- Silver declares its grain in the table COMMENT; that is mandatory. Tidy shape (long and atomic: one variable per column, one observation per row, wide sources unpivoted, compound codes split into typed columns) is an optional, low-priority practice, not a gate. See section 4.
 - Store raw measures at source grain. No business metric calculations.
 - Semi-additive measures (balances, headcount, inventory) are labeled in the column COMMENT. Non-additive ratios are not stored; store numerator and denominator components separately.
 
@@ -174,9 +174,11 @@ A published dataset must produce entity rows × period columns × one additive m
 
 ---
 
-## 4. Tidy Data Recommendations
+## 4. Tidy Data (Optional, Low Priority)
 
 Reference: Wickham, "Tidy Data," Journal of Statistical Software 59(10), 2014.
+
+Status: optional practice, nice-to-have. The Silver-long / Gold-wide reshaping is a hard transition for people and tooling; adopt it per domain when capacity allows, and do not block delivery on it. Mandatory regardless of stored shape: grain declared in the COMMENT, typed columns, additivity labeled, and the pivot test on published datasets.
 
 Three rules:
 
@@ -184,7 +186,7 @@ Three rules:
 2. Each observation is a row.
 3. Each type of observational unit is its own table.
 
-How this maps to the medallion layers:
+Target shapes by layer, where adopted:
 
 | Layer | Shape | Rationale |
 | --- | --- | --- |
@@ -192,7 +194,7 @@ How this maps to the medallion layers:
 | Silver | Tidy: long, atomic, one variable per column | Analysis, aggregation in any direction, forecasting-ready |
 | Gold | Intentionally wide at a declared grain | Consumption; the pivot test is the acceptance check |
 
-Messy patterns and their fixes, applied in Silver:
+Messy patterns and their fixes, applied in Silver where the practice is adopted:
 
 - Column headers holding values (jan_revenue, feb_revenue): unpivot to long.
 - Multiple variables in one column ("US-ENT-0042"): split into typed columns.

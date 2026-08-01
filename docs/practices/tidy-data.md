@@ -2,6 +2,8 @@
 
 **Source:** Wickham, H. (2014). "Tidy Data." *Journal of Statistical Software*, 59(10). https://doi.org/10.18637/jss.v059.i10
 
+> **Status: optional practice, low priority.** This doc is the theory behind the recommended layer shapes (Silver long, Gold wide), not a platform gate. The reshaping is a hard transition for people and tooling; treat it as a nice-to-have and adopt it per domain when capacity allows. Mandatory regardless of stored shape: grain declared in the COMMENT, typed columns, additivity labeled, and the pivot test on published datasets.
+
 ---
 
 ## What It Is

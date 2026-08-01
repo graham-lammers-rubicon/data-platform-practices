@@ -290,12 +290,12 @@ This metric requires a drill-across join. It is not computable from a single fac
 **Metric layer in the lakehouse stack:**
 
 ```
-Bronze (raw)      →  source measures land here, no business logic
-Silver (tidy)     →  conformed measures, grain declared, dimensions attached
-Gold (semantic)   →  metrics defined here, aggregation rules enforced,
-                     time intelligence applied, governance metadata attached
-Presentation      →  BI tools, dashboards, notebooks query Gold metrics,
-                     not Silver measures
+Bronze (raw)        →  source measures land here, no business logic
+Silver (conformed)  →  conformed measures, grain declared, dimensions attached
+Gold (semantic)     →  metrics defined here, aggregation rules enforced,
+                       time intelligence applied, governance metadata attached
+Presentation        →  BI tools, dashboards, notebooks query Gold metrics,
+                       not Silver measures
 ```
 
 > The Gold layer is where measures become metrics. It is not optional in a production system. Without it, every BI tool becomes its own semantic layer and definitions diverge.
@@ -551,7 +551,7 @@ Swap `product` for `location` or `org` to forecast any other dimension with zero
 
 ### Pattern 4: The Pivot Test
 
-A well-structured dataset transforms cleanly from long (tidy) to wide (pivoted). The long form is what you store. The wide form is the acceptance test.
+A well-structured dataset transforms cleanly from long (tidy) to wide (pivoted). Long storage is the recommended shape, not a gate ([Tidy data](tidy-data.md) is optional); the wide pivot is the acceptance test either way.
 
 ```
   LONG (stored)                             WIDE (pivoted)

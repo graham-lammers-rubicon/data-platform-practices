@@ -14,9 +14,11 @@ It is written for humans and agents. Agents such as Claude Code and Databricks G
 
 ## Sections
 
-- [Onboarding](onboarding/index.md) - role-based entry paths for new team members
-- [Practices](practices/index.md) - design and delivery standards: medallion architecture, dataset contracts, BI standards, tidy data, spec-driven development
-- [Platform](platform/index.md) - infrastructure reference: Azure footprint, environments, compute, metric views and Genie, naming, secrets, CI/CD, resilience
-- [Governance](governance/index.md) - access model, responsible use, data lifecycle
+Each section answers a different question:
+
+- [Onboarding](onboarding/index.md) - *where do I start?* Role-based entry paths with reading orders and first-week checklists.
+- [Practices](practices/index.md) - *what are the rules for what I build?* The design and delivery standards, arranged as an arc: shape the data, deliver the work, serve decisions.
+- [Platform](platform/index.md) - *how does the platform itself run?* Azure, Databricks, and GitHub reference, grouped by intent: stand it up, secure it, serve the semantic layer.
+- [Governance](governance/index.md) - *what am I allowed to do?* Access, usage obligations, and the open data-lifecycle decisions.
 
 Docs marked **Status: stub** have agreed scope but unwritten rules; they are not normative until the notice is removed.

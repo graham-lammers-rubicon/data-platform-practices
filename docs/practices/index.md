@@ -9,7 +9,7 @@ The docs form one arc: shape the data, deliver the work, serve decisions. Read t
 - [Analytical dataset language](analytical-dataset-language.md) - the contract vocabulary: period, grain, dimensions, measures, metrics. Start here; every other doc uses these terms.
 - [Medallion data practices](medallion-data-practices.md) - applies the contract to Bronze/Silver/Gold: layer rules, Lakeflow SDP patterns, SCD2 placement.
 - [Data products](data-products.md) - the packaging standard: what turns a governed dataset into a product with an owner, contract, and consumers.
-- [Tidy data](tidy-data.md) - the theory behind the shapes: why Silver is long and Gold is wide. Background reading, not rules.
+- [Tidy data](tidy-data.md) - the theory behind the shapes: why Silver is long and Gold is wide. Optional and low priority; background reading, not rules.
 
 ## 2. Deliver the work
 

@@ -8,7 +8,7 @@ This repo holds the rules; the worked examples live in the reference domain repo
 
 1. [Access model](../governance/access-model.md) - what you can touch and why the layer boundaries are hard rules
 2. [Medallion data practices](../practices/medallion-data-practices.md) - the core reference: layer contracts, CDC and SCD2 placement, pipeline architecture
-3. [Tidy data](../practices/tidy-data.md) - the shape rules for Silver and why Gold is wide
+3. [Tidy data](../practices/tidy-data.md) - optional background: the tidy shapes for Silver and Gold; a nice-to-have practice, not a gate
 4. [Analytical dataset language](../practices/analytical-dataset-language.md) - grain, measures vs. metrics; the contract you publish against
 5. [Spec-driven development](../practices/spec-driven-development.md) - no pipeline work starts without a spec
 6. Platform reference as needed: [Environments](../platform/databricks-environments.md), [Compute policies](../platform/databricks-compute-policies.md), [Naming conventions](../platform/naming-conventions.md), [CI/CD and deployment](../platform/github-cicd-and-deployment.md), [Secrets and credentials](../platform/secrets-and-credentials.md)

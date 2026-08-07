@@ -1,0 +1,31 @@
+# Naming conventions. The `grp-` prefix is the reconciler's ownership fence:
+# only groups matching it are ever touched. Vocabulary lists are closed;
+# extending them is a PR to this file, reviewed by security via CODEOWNERS.
+#
+# access_pattern: grp-<domain>-<service>-<role>-<env>   (granted on resources)
+# team_pattern:   grp-<domain>-<name>-team              (nested into access groups)
+prefix: grp-
+# multi-word roles use snake_case (bi_analyst, data_engineer): underscores stay inside
+# a segment, hyphens separate segments, so parsing is unambiguous
+access_pattern: "^grp-(?P<domain>[a-z]+)-(?P<service>[a-z]+)-(?P<role>[a-z]+(?:_[a-z]+)*)-(?P<env>prod|nonprod)$"
+team_pattern: "^grp-(?P<domain>[a-z]+)-(?P<name>[a-z][a-z-]*)-team$"
+domains:
+  - data
+  - platform
+  - engineering
+  - security
+services:
+  - azure
+  - azsql
+  - databricks
+  - github
+roles:
+  - reader
+  - contributor
+  - bi_analyst
+  - data_engineer
+  - engineer
+  - admin
+environments:
+  - prod
+  - nonprod

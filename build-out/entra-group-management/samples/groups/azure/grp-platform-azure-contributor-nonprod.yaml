@@ -1,0 +1,15 @@
+name: grp-platform-azure-contributor-nonprod
+description: "Contributor on the platform-nonprod resource group"
+owners:
+  - platform-lead@rubicon.com
+members:
+  users:
+    - dana@rubicon.com
+    - evan@rubicon.com
+  groups: []
+targets:
+  - azure
+metadata:
+  domain: platform
+  environment: nonprod
+  requested_in: "https://github.com/rubicon/entra-group-management/issues/7"

@@ -1,0 +1,14 @@
+name: grp-engineering-github-engineer-prod
+description: "Engineer team on production engineering repos (GitHub write/maintain)"
+owners:
+  - eng-lead@rubicon.com
+members:
+  users:
+    - grace@rubicon.com
+  groups: []
+targets:
+  - github
+metadata:
+  domain: engineering
+  environment: prod
+  requested_in: "https://github.com/rubicon/entra-group-management/issues/19"

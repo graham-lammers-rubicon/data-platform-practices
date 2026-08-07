@@ -1,0 +1,16 @@
+name: grp-data-databricks-bi_analyst-prod
+description: "Read access to prod gold schemas in Unity Catalog"
+owners:
+  - data-lead@rubicon.com
+members:
+  users:
+    - bob@rubicon.com
+    - carol@rubicon.com
+  groups:
+    - grp-data-core-team
+targets:
+  - databricks
+metadata:
+  domain: data
+  environment: prod
+  requested_in: "https://github.com/rubicon/entra-group-management/issues/42"

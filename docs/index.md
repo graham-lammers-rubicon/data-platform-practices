@@ -22,5 +22,4 @@ Each section answers a different question:
 - [Governance](governance/index.md) - *what am I allowed to do?* Access, usage obligations, and the open data-lifecycle decisions.
 
 Architecture decisions and their rationale are indexed in the [platform decision register](platform/decision-register.md); open items live there with owners.
-
 Docs marked **Status: stub** have agreed scope but unwritten rules; they are not normative until the notice is removed.

@@ -1,26 +1,33 @@
 # data-platform-practices
 
-Normative standards for a Databricks Data Intelligence Platform on Azure: how data is shaped, delivered, governed, and served. This repo is the rulebook; worked examples live in the reference domain repos.
+Rubicon is building a Databricks Data Intelligence Platform: a governed lakehouse hosted on Azure where data is ingested once, shaped through medallion layers, governed in Unity Catalog, and served from a certified semantic layer to BI, analytics, and AI-driven consumption. The platform is being stood up under Workstream 04 (Data Foundation Build) with our partner Nimble Gravity. This repo is the working home for that effort: the standards the platform is built and operated against, and the working material for the build itself.
 
-Written for humans and agents.
+The ask of every reader, Rubicon or partner, human or agent, is the same: read the standards before you build, follow them instead of inventing patterns, and when a standard is wrong or missing, change it by branch and PR rather than working around it. Nothing here is frozen; everything here is authoritative until changed.
+
+The repo serves two purposes:
+
+1. **Platform guidelines** ([docs/](docs/index.md)) - the lasting, normative standards for how data is shaped, delivered, governed, and served: practices, platform reference, and governance policy. This is the rulebook the team builds and operates against; worked examples live in the reference domain repos.
+2. **Build-out** ([build-out/](build-out/README.md)) - working material for Workstream 04 (Data Foundation Build), which stands up the Databricks platform: workspaces, Unity Catalog wiring, compute, CI/CD via Databricks Asset Bundles, and the ingestion and pipeline foundations, plus the Azure footprint Databricks requires underneath (subscriptions, network, storage, identities). Holds Nimble Gravity's WS04 plans, the vendor-driven work items, and the mapping from vendor proposals to the governing docs. Not normative; where it conflicts with docs/, docs/ wins, and the outcomes are recorded in the [platform decision register](docs/platform/decision-register.md).
+
+## Goals
+
+- One authoritative place for platform standards, so definitions and patterns do not diverge across teams, vendors, and tools.
+- Decisions recorded with rationale in the [decision register](docs/platform/decision-register.md), so the "why" survives the engagement that produced it.
+- Guidance executable by both humans and agents without additional context.
+
+## Who reads this
 
 - **Humans**: start at [docs/index.md](docs/index.md) and follow your role path (data engineer, BI analyst, platform engineer). Not building? Read [BI practices, section 1](docs/practices/bi-practices-guidance.md) for what the platform is for, and the [access model](docs/governance/access-model.md) for who may touch what.
 - **Agents** (Claude Code, Databricks Genie): [CLAUDE.md](CLAUDE.md) is the distilled ruleset. Follow these docs before inventing patterns and cite the doc being applied. When CLAUDE.md and a reference doc disagree, the reference doc wins.
 
+## This is a living repo
+
+These documents are working documents, not a frozen publication. Corrections, modifications, and requests are welcome from anyone on the team or from partners, and all follow the same branch-and-PR process:
+
+1. Branch from `main`.
+2. Make the change. A rule change updates the reference doc first, then the CLAUDE.md distillation; a decision gets its register row and its normative content in the same PR.
+3. Open a PR to `main` for review. The PR is the change record; a doc edit that bypasses review is a defect, the same as a UI-made infrastructure change.
+
+Requests without a proposed edit are fine too: open an issue or a stub PR describing the gap, and the owning team picks it up.
+
 Docs marked **Status: stub** have agreed scope but open decisions; they are not normative until the notice is removed.
-
-Changes go through PR. A rule change updates the reference doc first, then the CLAUDE.md distillation.
-
-## Vendor-driven work items: Nimble Gravity / WS04
-
-Workstream 04 (Data Foundation Build) runs with Nimble Gravity (NG lead: Dave Newman; client counterpart: Graham Lammers). The 2026-08 architecture conflicts between NG's plans and this repo are decided and recorded in the [platform decision register](docs/platform/decision-register.md). The items below originate in NG's WS04 documents and are NG-driven; they are tracked here for visibility, but any resolution that touches platform standards lands as a PR to this repo, not as a vendor document.
-
-- **Source system inventory** - full inventory including GUS and other operational/reporting systems; confirmed so far: Azure SQL DB, Amazon RDS, Amazon S3 pending the Palantir Foundry investigation.
-- **Source onboarding sequence** - priority order for onboarding sources within the Build phase.
-- **AWS environment handoff** - documented handoff of AWS/Terraform knowledge from the exiting vendor (Rackspace); gating dependency for migration steps.
-- **AWS-to-Azure connectivity model** - VPN/ExpressRoute vs public endpoint with allowlist vs cross-cloud PrivateLink vs landing data behind an Azure endpoint, for RDS/S3 ([register open item](docs/platform/decision-register.md#open-items)).
-- **Azure SQL DB network location** - where the existing source lives and its reconciliation into the hub-and-spoke topology ([register open item](docs/platform/decision-register.md#open-items)).
-- **IP address plan validation** - hub and spoke CIDRs against AWS VPC ranges and existing Rubicon networks ([register open item](docs/platform/decision-register.md#open-items)).
-- **Azure region confirmation** - pending tenant review ([register open item](docs/platform/decision-register.md#open-items)).
-- **OneLake mirroring evaluation** - for the Power BI connection to Gold.
-- **Data quality and reconciliation thresholds** - tolerance thresholds co-defined with Rubicon business stakeholders during the Build-to-Certify transition.

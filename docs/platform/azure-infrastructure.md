@@ -25,12 +25,16 @@ Two tiers, one region, one resource group per tier, plus shared connectivity res
 | Resource group | `[subject]-dbx-rg-[region]-nonprod` | `[subject]-dbx-rg-[region]-prod` |
 | Databricks workspace (VNet-injected, serverless via NCC) | `[subject]-dbx-workspace-[region]-nonprod` | `[subject]-dbx-workspace-[region]-prod` |
 | Spoke virtual network | `[subject]-dbx-vnet-[region]-nonprod` | `[subject]-dbx-vnet-[region]-prod` |
-| Storage (ADLS Gen2, tier data) | `[subject]dbxst[region]np` | `[subject]dbxst[region]prod` |
+| Storage (ADLS Gen2, tier data) | `[subject]dbxstore[region]np` | `[subject]dbxstore[region]prod` |
 | Access connector | `[subject]-dbx-connector-[region]-nonprod` | `[subject]-dbx-connector-[region]-prod` |
 | Platform key vault | `[subject]-dbx-vault-[region]-np` | `[subject]-dbx-vault-[region]-prod` |
 | Log Analytics | `[subject]-dbx-log-[region]-nonprod` | `[subject]-dbx-log-[region]-prod` |
 
 Names follow the suffix pattern `[subject]-[scope]-<type>-[region]-<env>`: no instance counters, environment last ([Naming conventions](naming-conventions.md)). Shared connectivity resources (hub) use `shared` as the final token: `[subject]-hub-vnet-[region]-shared`. Domain secret vaults (`[subject]-<domain>-vault-[region]-<env>`) are created per secret scope as domains onboard ([Secrets and credentials](secrets-and-credentials.md)).
+
+## Management group
+
+All platform subscriptions sit under a single custom management group under Tenant Root, `[org]-mg` ([Naming conventions](naming-conventions.md)); however the open subscription topology decision lands, its subscriptions go under this group. The Azure Policy baseline (which policies is still open, below) is assigned once at the management group, never per subscription, so guardrails cannot drift between subscriptions. A full Cloud Adoption Framework landing-zone hierarchy is deferred: it is more governance than an estate of this size needs, and adopting one later is additive, not rework. Adopted 2026-08 from the vendor Azure Platform Plan, section 2.2 ([Decision register](decision-register.md)).
 
 ## Network design: hub and spoke
 
@@ -83,7 +87,7 @@ Serverless compute runs in the Databricks tenant, so its network access is confi
 
 ## Unity Catalog wiring
 
-- One metastore per region is a platform limit: ["You can create only one metastore per region"](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-metastore). Both workspaces attach to the single regional metastore. Terraform manages it. A metastore-per-environment design was evaluated and rejected 2026-08 for this reason; it is not a choice available within one region.
+- One metastore per region is a platform limit: ["You can create only one metastore per region"](https://learn.microsoft.com/en-us/azure/databricks/data-governance/unity-catalog/create-metastore). Both workspaces attach to the single regional metastore. Terraform manages it. A metastore-per-environment design was evaluated and superseded 2026-08 for this reason; it is not a choice available within one region.
 - No metastore-level root storage. Managed storage is declared per catalog and per layer schema on the tier storage account (layout below), so tier isolation holds at the storage layer.
 - Storage access is via the tier access connector's managed identity registered as a UC storage credential. No service principal credentials for storage, nothing to rotate.
 - The metastore admin role is held by a platform team group, not an individual.
@@ -139,7 +143,7 @@ These decisions are open, owned jointly with the Cloud and DevOps teams; each ne
 | Azure SQL DB source location | Where the existing Azure SQL DB source lives and how it reconciles into the hub-and-spoke topology; decides its private endpoint placement. | TBD |
 | Serverless egress control | Serverless compute has unrestricted outbound by default. Do we adopt Databricks account-level network policies to restrict egress, and to what allowlist? | TBD |
 | Subscription topology | Two candidates remain: (a) one shared subscription with tier resource groups plus the connectivity hub resources, or (b) a prod / nonprod / connectivity subscription split. A subscription-per-environment design (4+ subscriptions) is off the table (decided 2026-08, [Decision register](decision-register.md)). Note: each spoke VNet must live in the same subscription as its workspace. | TBD |
-| Azure Policy baseline | Which policies are assigned (required tags, allowed regions, public-network-access deny, diagnostic settings deployment)? | TBD |
+| Azure Policy baseline | Which policies are assigned (required tags, allowed regions, public-network-access deny, diagnostic settings deployment)? Assignment scope is decided: once, at the management group (see above). | TBD |
 | Log Analytics wiring | Which diagnostic settings feed the `[subject]-dbx-log-*` workspaces, what retention, what minimum alert set? Today the workspace is named but unused. | TBD |
 | BCDR | Redundancy tiers and recovery: decision register in [Resilience](resilience.md). | TBD |
 
@@ -158,6 +162,7 @@ These decisions are open, owned jointly with the Cloud and DevOps teams; each ne
 ## Checklist
 
 - [ ] Every resource exists in Terraform state with baseline tags; portal diff is zero
+- [ ] All platform subscriptions sit under `[org]-mg`; the Azure Policy baseline is assigned at the management group, not per subscription
 - [ ] Workspaces are VNet-injected with secure cluster connectivity and serverless enabled via NCC; no separate fallback workspace exists
 - [ ] Hub and spoke VNets peered; Databricks subnets delegated, routed to the hub firewall, with the documented UDR allowances in place
 - [ ] Classic-side private endpoints deployed per the matrix; Private DNS zones centralized in the hub and linked to hub and spokes
@@ -178,6 +183,7 @@ These decisions are open, owned jointly with the Cloud and DevOps teams; each ne
 - Azure Databricks: [Azure Private Link concepts](https://learn.microsoft.com/en-us/azure/databricks/security/network/concepts/private-link)
 - Azure: [Azure Private Endpoint private DNS zone values](https://learn.microsoft.com/en-us/azure/private-link/private-endpoint-dns)
 - Azure Architecture Center: [Hub-spoke network topology in Azure](https://learn.microsoft.com/en-us/azure/architecture/networking/architecture/hub-spoke)
+- Azure: [What are Azure management groups?](https://learn.microsoft.com/en-us/azure/governance/management-groups/overview)
 - Azure Databricks: [Serverless network security (NCCs)](https://learn.microsoft.com/en-us/azure/databricks/security/network/serverless-network-security/)
 - Azure Databricks: [Private connectivity from serverless compute](https://learn.microsoft.com/en-us/azure/databricks/security/network/serverless-network-security/serverless-private-link)
 - Azure Databricks: [Private Link to resources in your VNet](https://learn.microsoft.com/en-us/azure/databricks/security/network/serverless-network-security/pl-to-internal-network)

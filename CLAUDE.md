@@ -40,6 +40,8 @@ docs/
     data-lifecycle.md            Stub: classification, retention, deletion decision register
 ```
 
+A separate root, `build-out/`, holds Workstream 04 build-phase working material: Nimble Gravity's vendor-authored WS04 plans (drafts under joint review; client revisions land by PR and are fed back to NG) and the vendor-driven work items. Nothing under `build-out/` is normative; where it conflicts with `docs/`, `docs/` wins, and conflicts are recorded in `docs/platform/decision-register.md`. Never use an edit to a vendor document to record a decision.
+
 Docs marked stub carry a `> **Status: stub.**` notice: scope is agreed, rules are unwritten, not normative. When writing a stub's content, remove the notice.
 
 The sections below are the distilled rules. The full references with patterns, examples, and checklists live in `docs/practices/`. When the summary here and a reference doc disagree, the reference doc wins; fix the summary.

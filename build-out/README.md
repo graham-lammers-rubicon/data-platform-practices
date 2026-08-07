@@ -4,6 +4,7 @@ Working material for the Workstream 04 (Data Foundation Build) build-out. This f
 
 ## Contents
 
+- [entra-group-management/](entra-group-management/README.md) - group inventory and configuration-as-code for the platform's Entra ID groups, per the [access model](../docs/governance/access-model.md) and [naming conventions](../docs/platform/naming-conventions.md).
 - [nimblegravity/](nimblegravity/) - Nimble Gravity's WS04 documents, vendor-authored drafts under joint review (NG lead: Dave Newman; client counterpart: Graham Lammers):
   - [Architecture & Implementation Plan](nimblegravity/ws04-architecture-and-implementation-plan.md) - target lakehouse architecture, ingestion lanes, environment topology, delivery phases
   - [Azure Platform Plan](nimblegravity/ws04-azure-platform-plan.md) - subscription/RG topology, network design, resource inventory, identities, private endpoints

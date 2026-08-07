@@ -1,0 +1,9 @@
+# Groups the reconciler must never create, modify, or delete.
+# Exact names or prefixes. PR validation fails any file touching these;
+# the apply pipeline refuses them as a second, independent check.
+protected:
+  exact:
+    - grp-breakglass-tenant-admin
+    - grp-breakglass-databricks-admin
+  prefixes:
+    - grp-breakglass-

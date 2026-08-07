@@ -1,0 +1,19 @@
+# Nesting example: a team group reused inside access groups.
+# Joiners/leavers are one membership change here, not N changes downstream.
+name: grp-data-core-team
+description: "Core data platform team; nested into data access groups"
+owners:
+  - data-lead@rubicon.com
+members:
+  users:
+    - bob@rubicon.com
+    - carol@rubicon.com
+    - frank@rubicon.com
+  groups: []
+targets:
+  - databricks
+  - azure-sql
+metadata:
+  domain: data
+  # team groups span environments; no environment key (schema: optional, access groups only)
+  requested_in: "https://github.com/rubicon/entra-group-management/issues/3"

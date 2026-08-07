@@ -23,12 +23,12 @@ Conduct obligations (purpose-bound compute, tagging workarounds, self-reporting)
 
 ## Workload classes
 
-Serverless is the preferred default, not a hard requirement. The standard workspaces are serverless type and cannot run classic compute ([Azure infrastructure](azure-infrastructure.md)); a workload with a justified need for classic compute runs in the VNet-injected fallback workspace (for example on-prem ingestion), always behind a policy, with the justification recorded in its spec.
+Serverless is the preferred default, not a hard requirement. The standard workspaces are hybrid: VNet-injected with serverless enabled via NCC ([Azure infrastructure](azure-infrastructure.md)), so classic compute is available in every workspace, always behind a Terraform-defined policy. A workload choosing classic compute (for example CDC/JDBC pull ingestion from source databases over the private network path) records the justification in its spec.
 
 | Workload | Compute | Governance |
 | --- | --- | --- |
 | Lakeflow SDP pipelines | Serverless | Serverless usage policy tags; continuous mode is prod-only ([Environments](databricks-environments.md)) |
-| Jobs | Serverless; classic via `jobs-standard` policy, fallback workspace only | Policy or usage policy |
+| Jobs and pull ingestion | Serverless; classic via `jobs-standard` policy where the workload needs the classic network path | Policy or usage policy |
 | Interactive notebooks | Serverless | Usage policy |
 | SQL warehouses | Serverless, auto-stop | Sized per team: `<team>-<size>` ([Naming conventions](naming-conventions.md)) |
 | Vector search, model serving | Serverless endpoints | Serverless usage policy tags |

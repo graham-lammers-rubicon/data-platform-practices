@@ -16,6 +16,7 @@ Unity Catalog metadata is the primary map humans and agents have of the data lan
 - Full words: `customer_acquisition_cost`, not `cust_acq_cst`. Brief and semantic, never cryptic.
 - Abbreviate only where a platform limit forces it (the Azure 24-character types: `dbx`, `np`, `[region]`). UC names have a 255-character limit; spell them out.
 - Industry-standard abbreviations only: `id`, `qty`, `pct`.
+- Names never encode the vendor or implementer. A resource or identity built by a vendor is named exactly as if the platform team built it; ownership and accountability live in the `owner` tag, not in a name token. A vendor-prefixed name (`sp-<vendor>-*`) is a defect.
 - A name states what a thing is; the COMMENT states what it means. See [Metadata and comments](metadata-and-comments.md).
 
 ## Case styles and where they apply
@@ -91,8 +92,9 @@ Standard tokens, defined once:
 
 - `[subject]`: the business subject or product line that owns the resource. Set the real token in Terraform and register it here before first use; docs use the placeholder.
 - `[scope]`: the workload within the subject. This platform's core infrastructure: `dbx`. Domain-scoped resources (domain secret vaults) use the domain token as scope.
-- `<type>`: readable resource-type token from the table below. Full words where limits allow (`workspace`, `vault`, `log`); abbreviate only where a length limit forces it (`st`).
-- Environments (catalogs, bundle targets): `dev`, `nonprod`, `prod`. Workspace tiers: `nonprod`, `prod`, spelled out; abbreviate to `np` only where a length limit forces it.
+- `[org]`: the organization token, used only by tenant-level singletons (the management group). Set the real token in Terraform and register it here before first use.
+- `<type>`: readable resource-type token from the table below. Full words where limits allow (`workspace`, `vault`, `log`); abbreviate only where a length limit forces it (`store`).
+- Environments (catalogs, bundle targets): `dev`, `nonprod`, `prod`. Workspace tiers: `nonprod`, `prod`, spelled out; abbreviate to `np` only where a length limit forces it. Shared connectivity (hub) resources belong to no tier and use `shared` as the final token.
 - Region: examples in this repo use the `[region]` placeholder. Set the real CAF region token in Terraform and register it here before first use; do not hardcode a region in docs.
 - No arbitrary instance counters. `001` on a singleton is noise. Append a two-digit series suffix only when an intentional series of the same entity exists, and register the series here.
 
@@ -100,22 +102,25 @@ Azure resources scope to tier, not environment: one nonprod-tier workspace hosts
 
 | Resource | Type token | Constraint that matters | Example |
 | --- | --- | --- | --- |
+| Management group | `mg` | Tenant-level singleton: no subject, region, or environment token | `[org]-mg` |
 | Resource group | `rg` | 1-90 chars | `[subject]-dbx-rg-[region]-nonprod` |
 | Databricks workspace | `workspace` | 3-64, alphanumerics, underscores, hyphens | `[subject]-dbx-workspace-[region]-nonprod` |
 | Databricks access connector | `connector` | | `[subject]-dbx-connector-[region]-nonprod` |
-| Storage account | `st` | 3-24, lowercase alphanumeric only, globally unique | `[subject]dbxst[region]np` |
-| ADLS container | none | 3-63, lowercase, numbers, hyphens | `bronze-landing`, `uc-managed` |
+| Storage account | `store` | 3-24, lowercase alphanumeric only, globally unique | `[subject]dbxstore[region]np` |
+| ADLS container | none | 3-63, lowercase, numbers, hyphens | `landing`, `bronze`, `silver`, `gold`, `checkpoints` (one per medallion layer plus supporting; [Azure infrastructure](azure-infrastructure.md)) |
 | Key vault | `vault` | 3-24, alphanumerics and hyphens, globally unique | `[subject]-dbx-vault-[region]-np` |
-| Virtual network | `vnet` | 2-64 | `[subject]-dbx-vnet-[region]-nonprod` |
+| Virtual network | `vnet` | 2-64 | `[subject]-dbx-vnet-[region]-nonprod`, hub: `[subject]-hub-vnet-[region]-shared` |
 | Subnet | `snet` | | `[subject]-dbx-snet-host-[region]-nonprod` |
+| Route table | `rt` | | `[subject]-dbx-rt-[region]-nonprod` |
+| Azure Firewall | `afw` | | `[subject]-hub-afw-[region]-shared` |
 | Private endpoint | `endpoint` | | `[subject]-dbx-endpoint-storage-blob-[region]-nonprod` |
 | Log Analytics workspace | `log` | | `[subject]-dbx-log-[region]-nonprod` |
 
 Rules:
 
-- Storage accounts and key vaults have 24-character global limits, which is why their examples abbreviate type and environment (`st`, `np`). Verify the budget for the chosen subject and region tokens before first use; storage accounts also forbid hyphens, so their tokens concatenate bare.
+- Storage accounts and key vaults have 24-character global limits, which is why their examples abbreviate type and environment (`store`, `np`). Verify the budget for the chosen subject and region tokens before first use; storage accounts also forbid hyphens, so their tokens concatenate bare.
 - Names are assigned in infrastructure code (see [Azure infrastructure](azure-infrastructure.md)). A portal-created resource with an ad hoc name is two defects, not one.
-- The network patterns (`vnet`, `snet`) apply only to a VNet-injected fallback workspace; standard workspaces are serverless and have no customer VNet. `endpoint` also names NCC private endpoints to protected resources.
+- The network patterns (`vnet`, `snet`, `rt`, `afw`, `endpoint`) are standard: every workspace is VNet-injected in a hub-and-spoke topology ([Azure infrastructure](azure-infrastructure.md)). `endpoint` names both Azure Private Endpoints and NCC private endpoints to protected resources.
 - Identity objects (service principals, groups, managed identities) are the exception to suffix style: they keep kind prefixes (next section), because identities are found by kind first.
 
 ## Identity
@@ -175,6 +180,7 @@ Azure stores tag keys as first written; two spellings of one key (`CostCenter`, 
 
 - [ ] Every UC object name matches `[a-z][a-z0-9_]*` and its pattern above
 - [ ] No abbreviations outside the Azure-forced tokens and the industry-standard set
+- [ ] No vendor or implementer token in any resource or identity name; ownership is the `owner` tag
 - [ ] No layer prefix in any table or column name
 - [ ] No environment token in any job, pipeline, or warehouse name
 - [ ] Importable Python files and notebooks are `snake_case`

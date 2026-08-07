@@ -8,14 +8,14 @@ Use the groups, not the file list: standing the platform up, read group 1 top to
 
 Read in this order; each builds on the one before.
 
-- [Azure infrastructure](azure-infrastructure.md) - serverless workspaces, NCC connectivity, Unity Catalog wiring, identity, Terraform standard. The footprint everything else deploys into, plus the open network decisions owned with Cloud/DevOps.
+- [Azure infrastructure](azure-infrastructure.md) - hybrid compute (VNet-injected workspaces with serverless via NCC), hub-and-spoke networking, private endpoints, Unity Catalog wiring and storage layout, identity, Terraform standard. The footprint everything else deploys into, plus the open network decisions owned with Cloud/DevOps.
 - [Databricks environments](databricks-environments.md) - two workspace tiers, environment-per-catalog, one-way cross-tier access, bundle-only promotion. How dev, nonprod, and prod actually differ.
 - [GitHub CI/CD and deployment](github-cicd-and-deployment.md) - the pipeline that moves code through those environments: promotion gates, OIDC identity, rollback.
 - [Databricks compute policies](databricks-compute-policies.md) - what compute may run, how it terminates, and how every DBU traces to an owner. Includes individual cost discretion.
 
 ## 2. Identity and secrets
 
-The security spine; with serverless workspaces there is no network perimeter to lean on.
+The security spine. The network perimeter protects paths; identity and UC grants decide who reads data.
 
 - [Databricks service principal authentication](databricks-service-principal-auth.md) - machine identities, auth ranking, lifecycle, and human OAuth profiles.
 - [Secrets and credentials](secrets-and-credentials.md) - the storage hierarchy: prefer no secret at all; Key Vault-backed scopes for the rest; repo hygiene.
@@ -32,6 +32,7 @@ The implementation of the [practices arc's](../practices/index.md) serve stage.
 - [Naming conventions](naming-conventions.md) - case styles, name patterns, and tokens for everything with a name. Check before creating anything.
 - [Metadata and comments](metadata-and-comments.md) - UC COMMENT requirements, commit message standard, docstrings. What makes the platform self-describing.
 
-## 5. Open decision registers
+## 5. Decision registers
 
+- [Platform decision register](decision-register.md) - dated architecture decisions (compute model, topology, storage layout, private endpoints, naming) and the consolidated open items with owners. Check here before reopening a settled question.
 - [Resilience and disaster recovery](resilience.md) - stub: DR/BCP decisions with owners open. Companion register: [data lifecycle](../governance/data-lifecycle.md) in governance.

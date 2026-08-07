@@ -22,9 +22,10 @@ docs/
     bi-practices-guidance.md
     tidy-data.md
   platform/                      Infrastructure reference, prefixed by system where one owns the doc
-    azure-infrastructure.md      Serverless workspaces, NCC connectivity, UC wiring, identity, Terraform
+    azure-infrastructure.md      Hybrid compute (VNet-injected + serverless via NCC), hub-and-spoke, private endpoints, UC wiring, storage layout, Terraform
     databricks-compute-policies.md      Workload classes, policy set, cost attribution
     databricks-environments.md   Two tiers (prod/np), env-per-catalog, DAB-only promotion
+    decision-register.md         Dated architecture decisions and open items with owners
     databricks-genie-spaces.md   Genie spaces as code: scope, trusted assets, benchmarks
     databricks-metric-views.md   Metric views as the governed metric implementation
     databricks-service-principal-auth.md  SP types, standard identities, auth ranking, lifecycle
@@ -38,6 +39,8 @@ docs/
     responsible-use.md           Data handling, compute accountability, GenAI rules
     data-lifecycle.md            Stub: classification, retention, deletion decision register
 ```
+
+A separate root, `build-out/`, holds Workstream 04 build-phase working material: Nimble Gravity's vendor-authored WS04 plans (drafts under joint review; client revisions land by PR and are fed back to NG) and the vendor-driven work items. Nothing under `build-out/` is normative; where it conflicts with `docs/`, `docs/` wins, and conflicts are recorded in `docs/platform/decision-register.md`. Never use an edit to a vendor document to record a decision.
 
 Docs marked stub carry a `> **Status: stub.**` notice: scope is agreed, rules are unwritten, not normative. When writing a stub's content, remove the notice.
 

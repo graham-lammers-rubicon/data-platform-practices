@@ -23,6 +23,7 @@ Each requires an owner, a decision, and a date. Answers open.
 - Bronze completeness is load-bearing: a retention window shorter than the longest replay need breaks the SCD2 rebuild promise. Retention is a contract with the pipelines, not just a cost setting.
 - Deleting from an append-only event table is a design exception. If erasure is in scope, the exception must be designed (e.g., targeted delete plus VACUUM), not improvised per request.
 - Clones drift: a deletion executed in prod does not propagate to existing nonprod clones. The deletion path must enumerate them.
+- `DROP TABLE` on an external table removes metadata but leaves the data files at the path ([Azure infrastructure](../platform/azure-infrastructure.md), storage layout). Any deletion procedure must delete the path as an explicit step for external tables.
 
 ## Checklist (activates when decisions land)
 

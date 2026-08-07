@@ -22,9 +22,10 @@ docs/
     bi-practices-guidance.md
     tidy-data.md
   platform/                      Infrastructure reference, prefixed by system where one owns the doc
-    azure-infrastructure.md      Serverless workspaces, NCC connectivity, UC wiring, identity, Terraform
+    azure-infrastructure.md      Hybrid compute (VNet-injected + serverless via NCC), hub-and-spoke, private endpoints, UC wiring, storage layout, Terraform
     databricks-compute-policies.md      Workload classes, policy set, cost attribution
     databricks-environments.md   Two tiers (prod/np), env-per-catalog, DAB-only promotion
+    decision-register.md         Dated architecture decisions and open items with owners
     databricks-genie-spaces.md   Genie spaces as code: scope, trusted assets, benchmarks
     databricks-metric-views.md   Metric views as the governed metric implementation
     databricks-service-principal-auth.md  SP types, standard identities, auth ranking, lifecycle

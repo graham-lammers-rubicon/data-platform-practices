@@ -11,7 +11,9 @@ Defines the environment model: two workspace tiers, environment-per-catalog, one
 
 ## Topology
 
-Two workspace tiers. Environments are catalogs and bundle targets, not workspaces.
+Two workspace tiers. Environments are catalogs and bundle targets, not workspaces. Both workspaces are VNet-injected with serverless compute enabled via NCC, the hybrid compute model defined in [Azure infrastructure](azure-infrastructure.md); the environment model is unaffected by which compute plane a workload uses.
+
+This model was confirmed 2026-08 against a vendor-proposed three-workspace, subscription-per-environment alternative, which was rejected ([Decision register](decision-register.md)).
 
 | Tier | Workspace | Environments (catalogs) |
 | --- | --- | --- |

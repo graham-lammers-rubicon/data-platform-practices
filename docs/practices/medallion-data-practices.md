@@ -22,10 +22,12 @@ Structure:
 
 ```
 <env>_catalog
-  ├── bronze    →  <entity>              (streaming tables, UC managed)
-  ├── silver    →  <domain>              (fact tables and entities, UC managed)
-  └── gold      →  <domain>_<grain>      (materialized views or Delta, UC managed)
+  ├── bronze    →  <entity>              (streaming tables)
+  ├── silver    →  <domain>              (fact tables and entities)
+  └── gold      →  <domain>_<grain>      (materialized views or Delta)
 ```
+
+Physical storage follows the layout in [Azure infrastructure](../platform/azure-infrastructure.md): the tier ADLS account carries one container per layer (`bronze`, `silver`, `gold`) plus `landing` and `checkpoints`, registered as UC external locations. Each layer schema declares its managed location under its layer's container, so table data lands at `<container>/<catalog>/<schema>/<table>`; pipeline-created streaming tables and materialized views are always managed tables. Consumers never touch paths; UC grants are the only access.
 
 The access matrix is authoritatively defined in the [Access model](../governance/access-model.md). Summary:
 
@@ -312,7 +314,7 @@ Writes outside the pipeline (ad hoc `saveAsTable`, manual MERGE) bypass expectat
 - [ ] System columns present; `rescuedDataColumn => '_rescued_data'` configured
 - [ ] CDC feeds land as append-only event tables; no changes applied in Bronze
 - [ ] No prefixes in table or column names; intent lives in the COMMENT
-- [ ] UC managed under `<env>_catalog.bronze`; grants per the access matrix
+- [ ] Registered in UC under `<env>_catalog.bronze`, data in the tier `bronze` container; grants per the access matrix
 
 ### 🥈 Silver
 - [ ] Types cast, nulls handled, deduplication applied
@@ -321,7 +323,7 @@ Writes outside the pipeline (ad hoc `saveAsTable`, manual MERGE) bypass expectat
 - [ ] Non-additive measures stored as components, not ratios
 - [ ] Semi-additive measures labeled in column COMMENT
 - [ ] Grain declared in every table COMMENT
-- [ ] UC managed under `<env>_catalog.silver`; lineage verifiable
+- [ ] Registered in UC under `<env>_catalog.silver`, data in the tier `silver` container; lineage verifiable
 
 ### 🥇 Gold
 - [ ] Every object has owner + version in TBLPROPERTIES or catalog tags
@@ -330,7 +332,8 @@ Writes outside the pipeline (ad hoc `saveAsTable`, manual MERGE) bypass expectat
 - [ ] Non-additive outputs expose numerator and denominator separately
 - [ ] Cross-domain joins defined here once
 - [ ] All consuming services access Gold only
-- [ ] UC managed under `<env>_catalog.gold`; lineage verifiable
+- [ ] Registered in UC under `<env>_catalog.gold`, data in the tier `gold` container; any external serving table covered by the domain maintenance job
+- [ ] Lineage verifiable
 
 ---
 

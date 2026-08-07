@@ -6,45 +6,42 @@ This repo is written for humans and agents. Agents such as Claude Code and Datab
 
 ## Repo layout
 
-```text
-docs/
-  index.md                       Site entry point with role router
-  onboarding/                    Role-based entry paths
-    data-engineer.md
-    bi-analyst.md
-    platform-engineer.md
-  practices/                     Design and delivery standards (reference docs for the rules below)
-    spec-driven-development.md   Spec contents, workflow, acceptance in CI
-    data-products.md             Data product definition, principles, anatomy
-    pipeline-automation.md       Automation mantra, human roles, four pillars
-    medallion-data-practices.md
-    analytical-dataset-language.md
-    bi-practices-guidance.md
-    tidy-data.md
-  platform/                      Infrastructure reference, prefixed by system where one owns the doc
-    azure-infrastructure.md      Hybrid compute (VNet-injected + serverless via NCC), hub-and-spoke, private endpoints, UC wiring, storage layout, Terraform
-    databricks-compute-policies.md      Workload classes, policy set, cost attribution
-    databricks-environments.md   Two tiers (prod/np), env-per-catalog, DAB-only promotion
-    decision-register.md         Dated architecture decisions and open items with owners
-    databricks-genie-spaces.md   Genie spaces as code: scope, trusted assets, benchmarks
-    databricks-metric-views.md   Metric views as the governed metric implementation
-    databricks-service-principal-auth.md  SP types, standard identities, auth ranking, lifecycle
-    github-cicd-and-deployment.md  GitHub Actions, promotion gates, OIDC identity
-    naming-conventions.md        Case styles, name patterns, standard tokens (cross-system)
-    metadata-and-comments.md     UC COMMENTs, commit messages, docstrings (cross-system)
-    secrets-and-credentials.md   Storage hierarchy, KV-backed scopes, repo hygiene (cross-system)
-    resilience.md                Stub: DR/BCP decision register (cross-system)
-  governance/                    Access and usage policy
-    access-model.md              Authoritative home of the access matrix
-    responsible-use.md           Data handling, compute accountability, GenAI rules
-    data-lifecycle.md            Stub: classification, retention, deletion decision register
-```
+- [docs/index.md](docs/index.md) - Site entry point with role router
+- [docs/onboarding/](docs/onboarding/index.md) - Role-based entry paths
+  - [data-engineer.md](docs/onboarding/data-engineer.md)
+  - [bi-analyst.md](docs/onboarding/bi-analyst.md)
+  - [platform-engineer.md](docs/onboarding/platform-engineer.md)
+- [docs/practices/](docs/practices/index.md) - Design and delivery standards (reference docs for the rules below)
+  - [spec-driven-development.md](docs/practices/spec-driven-development.md) - Spec contents, workflow, acceptance in CI
+  - [data-products.md](docs/practices/data-products.md) - Data product definition, principles, anatomy
+  - [pipeline-automation.md](docs/practices/pipeline-automation.md) - Automation mantra, human roles, four pillars
+  - [medallion-data-practices.md](docs/practices/medallion-data-practices.md)
+  - [analytical-dataset-language.md](docs/practices/analytical-dataset-language.md)
+  - [bi-practices-guidance.md](docs/practices/bi-practices-guidance.md)
+  - [tidy-data.md](docs/practices/tidy-data.md)
+- [docs/platform/](docs/platform/index.md) - Infrastructure reference, prefixed by system where one owns the doc
+  - [azure-infrastructure.md](docs/platform/azure-infrastructure.md) - Hybrid compute (VNet-injected + serverless via NCC), hub-and-spoke, private endpoints, UC wiring, storage layout, Terraform
+  - [databricks-compute-policies.md](docs/platform/databricks-compute-policies.md) - Workload classes, policy set, cost attribution
+  - [databricks-environments.md](docs/platform/databricks-environments.md) - Two tiers (prod/np), env-per-catalog, DAB-only promotion
+  - [decision-register.md](docs/platform/decision-register.md) - Dated architecture decisions and open items with owners
+  - [databricks-genie-spaces.md](docs/platform/databricks-genie-spaces.md) - Genie spaces as code: scope, trusted assets, benchmarks
+  - [databricks-metric-views.md](docs/platform/databricks-metric-views.md) - Metric views as the governed metric implementation
+  - [databricks-service-principal-auth.md](docs/platform/databricks-service-principal-auth.md) - SP types, standard identities, auth ranking, lifecycle
+  - [github-cicd-and-deployment.md](docs/platform/github-cicd-and-deployment.md) - GitHub Actions, promotion gates, OIDC identity
+  - [naming-conventions.md](docs/platform/naming-conventions.md) - Case styles, name patterns, standard tokens (cross-system)
+  - [metadata-and-comments.md](docs/platform/metadata-and-comments.md) - UC COMMENTs, commit messages, docstrings (cross-system)
+  - [secrets-and-credentials.md](docs/platform/secrets-and-credentials.md) - Storage hierarchy, KV-backed scopes, repo hygiene (cross-system)
+  - [resilience.md](docs/platform/resilience.md) - Stub: DR/BCP decision register (cross-system)
+- [docs/governance/](docs/governance/index.md) - Access and usage policy
+  - [access-model.md](docs/governance/access-model.md) - Authoritative home of the access matrix
+  - [responsible-use.md](docs/governance/responsible-use.md) - Data handling, compute accountability, GenAI rules
+  - [data-lifecycle.md](docs/governance/data-lifecycle.md) - Stub: classification, retention, deletion decision register
 
-A separate root, `build-out/`, holds Workstream 04 build-phase working material: Nimble Gravity's vendor-authored WS04 plans (drafts under joint review; client revisions land by PR and are fed back to NG) and the vendor-driven work items. Nothing under `build-out/` is normative; where it conflicts with `docs/`, `docs/` wins, and conflicts are recorded in `docs/platform/decision-register.md`. Never use an edit to a vendor document to record a decision.
+A separate root, [build-out/](build-out/README.md), holds Workstream 04 build-phase working material: Nimble Gravity's vendor-authored WS04 plans (drafts under joint review; client revisions land by PR and are fed back to NG) and the vendor-driven work items. Nothing under `build-out/` is normative; where it conflicts with `docs/`, `docs/` wins, and conflicts are recorded in the [decision register](docs/platform/decision-register.md). Never use an edit to a vendor document to record a decision.
 
 Docs marked stub carry a `> **Status: stub.**` notice: scope is agreed, rules are unwritten, not normative. When writing a stub's content, remove the notice.
 
-The sections below are the distilled rules. The full references with patterns, examples, and checklists live in `docs/practices/`. When the summary here and a reference doc disagree, the reference doc wins; fix the summary.
+The sections below are the distilled rules. The full references with patterns, examples, and checklists live in [docs/practices/](docs/practices/index.md). When the summary here and a reference doc disagree, the reference doc wins; fix the summary.
 
 When adding a page, register it in the parent `index.md`. Keep the doc tree and the index files in sync.
 
@@ -61,13 +58,13 @@ When adding a page, register it in the parent `index.md`. Keep the doc tree and 
 
 ## 1. Onboarding, Platform, and Governance
 
-Onboarding content lives under `docs/onboarding/` as role-based paths (data engineer, BI analyst, platform engineer): reading order, first-week checklist, and the rules that role is held to. Infrastructure reference docs live under `docs/platform/` (Azure footprint, environments, CI/CD, compute, naming, secrets, service principal auth). Access and usage policy lives under `docs/governance/`; the access matrix in section 2 below is authoritatively defined in `docs/governance/access-model.md`.
+Onboarding content lives under [docs/onboarding/](docs/onboarding/index.md) as role-based paths (data engineer, BI analyst, platform engineer): reading order, first-week checklist, and the rules that role is held to. Infrastructure reference docs live under [docs/platform/](docs/platform/index.md) (Azure footprint, environments, CI/CD, compute, naming, secrets, service principal auth). Access and usage policy lives under [docs/governance/](docs/governance/index.md); the access matrix in section 2 below is authoritatively defined in [access-model.md](docs/governance/access-model.md).
 
 Rules that apply across these docs:
 
-- **Spec before build, as guidance.** Data products and platform changes should start from a spec: requirements, data contracts, acceptance criteria, validation plan. Not an absolute gate, but nothing is certified without its contract recorded. See `docs/practices/spec-driven-development.md`.
+- **Spec before build, as guidance.** Data products and platform changes should start from a spec: requirements, data contracts, acceptance criteria, validation plan. Not an absolute gate, but nothing is certified without its contract recorded. See [spec-driven-development.md](docs/practices/spec-driven-development.md).
 - **Least privilege by default.** Access is requested per role and per layer, not granted broadly. Downstream consumers never get Bronze or Silver access (see medallion rules below).
-- **Everything is named by convention.** Catalogs, schemas, jobs, and pipelines follow the naming conventions doc. No ad hoc names in examples or templates.
+- **Everything is named by convention.** Catalogs, schemas, jobs, and pipelines follow the [naming conventions doc](docs/platform/naming-conventions.md). No ad hoc names in examples or templates.
 - **Everything is configuration-as-code.** Workspace, catalog, schema, and permission configuration lives in repos and deploys via Terraform or bundles. A UI-made change to any of these is a defect; the repo is the change record.
 - **No secrets in code or docs.** Credentials go through secret scopes or service principal auth. Docs must never contain real hostnames, tokens, or workspace IDs.
 - **Cost is governed.** Compute examples in docs must reflect the compute policies: right-sized SKUs, auto-termination, tagging for attribution.
@@ -76,7 +73,7 @@ Rules that apply across these docs:
 
 ## 2. Medallion Data Architecture
 
-Bronze, Silver, Gold is a structural promise between producers and consumers, not a naming convention. Every layer lives in Unity Catalog. Lineage and audit come from UC system tables, not spreadsheets.
+Bronze, Silver, Gold is a structural promise between producers and consumers, not a naming convention. Every layer lives in Unity Catalog. Lineage and audit come from UC system tables, not spreadsheets. Full reference: [medallion-data-practices.md](docs/practices/medallion-data-practices.md).
 
 ```text
 <env>_catalog
@@ -112,7 +109,7 @@ No layer prefixes in table or column names. The schema tells you the layer; the 
 
 ### Access matrix
 
-Authoritative version, with the environment axis and job identities: `docs/governance/access-model.md`. Summary:
+Authoritative version, with the environment axis and job identities: [access-model.md](docs/governance/access-model.md). Summary:
 
 | Role | Bronze | Silver | Gold |
 | --- | --- | --- | --- |
@@ -131,7 +128,7 @@ One Lakeflow SDP pipeline per domain, owning Bronze through Gold for that scope.
 
 ## 3. Data Products
 
-A data product is a governed dataset published to the analytical layer with a declared contract. The contract has five elements: period, grain, dimensions, measures, metrics. Principles, anatomy, and consumption patterns: `docs/practices/data-products.md`; the automation standard those products are built under: `docs/practices/pipeline-automation.md`.
+A data product is a governed dataset published to the analytical layer with a declared contract. The contract has five elements: period, grain, dimensions, measures, metrics. Principles, anatomy, and consumption patterns: [data-products.md](docs/practices/data-products.md); the automation standard those products are built under: [pipeline-automation.md](docs/practices/pipeline-automation.md).
 
 ### Grain is the contract
 
@@ -157,7 +154,7 @@ This distinction is where semantic layers break down. Do not conflate them.
 - You store measures. You define metrics. You report metrics to the business.
 - One definition per metric name. Metrics reference measures, not other metrics. Definitions are versioned; when one changes, the version boundary is documented.
 - Non-additive metrics declare how they aggregate across dimensions (total conversions / total clicks, not the average of channel rates).
-- Metrics are implemented as Unity Catalog metric views (`gold.<domain>_metrics`), consumed by dashboards and Genie from the same definition. See `docs/platform/databricks-metric-views.md` and `docs/platform/databricks-genie-spaces.md`.
+- Metrics are implemented as Unity Catalog metric views (`gold.<domain>_metrics`), consumed by dashboards and Genie from the same definition. See [databricks-metric-views.md](docs/platform/databricks-metric-views.md) and [databricks-genie-spaces.md](docs/platform/databricks-genie-spaces.md).
 
 ### Decision-first design (BI standard)
 
@@ -179,7 +176,7 @@ A published dataset must produce entity rows × period columns × one additive m
 
 ## 4. Tidy Data (Optional, Low Priority)
 
-Reference: Wickham, "Tidy Data," Journal of Statistical Software 59(10), 2014.
+Reference: Wickham, "Tidy Data," Journal of Statistical Software 59(10), 2014. Full reference doc: [tidy-data.md](docs/practices/tidy-data.md).
 
 Status: optional practice, nice-to-have. The Silver-long / Gold-wide reshaping is a hard transition for people and tooling; adopt it per domain when capacity allows, and do not block delivery on it. Mandatory regardless of stored shape: grain declared in the COMMENT, typed columns, additivity labeled, and the pivot test on published datasets.
 
